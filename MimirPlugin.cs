@@ -6,14 +6,17 @@ using BepInEx;
 using HarmonyLib;
 using Jotunn.Managers;
 using Jotunn.Utils;
-using Mimir.Modules.Commands;
-using Mimir.Modules.Leveling;
-using Mimir.Modules.Tracking;
+using Mimir.Core;
 using Mimir.Common;
 
 namespace Mimir;
 
-/// <summary>Skills for other mods: registration, ability unlocks and notices, stat bonuses and experience events.</summary>
+/// <summary>
+///     The BepInEx entry point of Mimir, a library that gives other mods skills with ability unlocks, stat bonuses
+///     and experience events. On load it binds the settings, adds the English translations and the <c>mimir</c>
+///     console command, and applies every Harmony patch class on its own. Each frame it drives the unlock checks and
+///     movement tracking in <c>Mimir.Core</c>.
+/// </summary>
 [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
 [BepInProcess("valheim.exe")]
 [BepInProcess("valheim.x86_64")]

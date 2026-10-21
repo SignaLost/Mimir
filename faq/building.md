@@ -66,18 +66,20 @@ in their editor.
 
 ## Source layout
 
-Only the plugin entry point sits at the root. Namespaces follow folders, so a type's
-namespace says where its file is. Each module keeps its Harmony patches in a `Patches/`
-folder beside the code they serve; logic never lives in a patch file.
+Only the plugin entry point sits at the root. Code the mod needs to work is in `core/`;
+optional features that a setting or ability turns on are in `modules/`, with a subfolder
+only for a feature of several files. Every Harmony patch is in `patch/`. Namespaces follow
+folders: `core/` is `Mimir.Core`, `patch/` is `Mimir.Patch`. The public API in `api/` is in
+the `Mimir` namespace itself.
 
 | Folder | Contents |
 |---|---|
-| `Api/` | The public API: `API`, `MimirSkill`, abilities, bonuses, stats, events, ramps, curves, diminishing returns |
-| `Common/` | Settings, logging, localization, embedded resources, safe event invocation |
-| `Modules/Leveling/` | The skill registry, gains and modifiers, unlocks and notices, fortifying, death |
-| `Modules/Stats/` | Bonus totals, and the game reads and results they adjust |
-| `Modules/Tracking/` | The experience events: what the local player does, kills, taming, movement |
-| `Modules/Commands/` | The `mimir` console command |
+| `api/` | The public API: `API`, `MimirSkill`, abilities, bonuses, perks, stats, events, ramps, curves, diminishing returns |
+| `common/` | Settings, logging, localization, embedded resources, safe event invocation |
+| `core/` | The skill registry, gains and modifiers, unlocks, bonus totals, the experience events, and the `mimir` console command |
+| `modules/` | Fortifying, unlock notices, and the Compendium's Skill Abilities page |
+| `compatibility/` | SeneaL UI and SeneaL API support |
+| `patch/` | Every Harmony patch |
 | `Thunderstore/` | The package icon, copied into the output folder |
 | `faq/` | The mod page's FAQ entries, copied into the output folder |
 | `Translations/` | The English text, one key per string; copied into the output folder and built into the DLL as a fallback |

@@ -51,6 +51,6 @@ First release, split out of Valchitecture so other mods can share its skill hand
 - `mimir` console command: skills, levels, abilities and bonuses; level and unlock
   changes require devcommands; unlock and reset change only the unlock, never the level.
   `resetskill` also removes the skill's unlocks and fortified level.
-- `Mimir.API` for other mods: registering and tracking skills, abilities, bonuses, gain
+- `MimirAPI` for other mods: registering and tracking skills, abilities, bonuses, gain
   modifiers, ability controls, readers by name, and events for each ability unlocked and
   each level-up.

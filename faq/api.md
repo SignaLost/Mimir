@@ -1,8 +1,8 @@
 # How do I use Mimir from my mod?
 
-Everything goes through `Mimir.API`, a public static class in Mimir.dll, and the
+Everything goes through `MimirAPI`, a public static class in Mimir.dll, and the
 `MimirSkill` it hands back. It works for the local player, must be called from the main
-thread, and reads 0 while no character is loaded. `API.Version` rises when members are
+thread, and reads 0 while no character is loaded. `MimirAPI.Version` rises when members are
 added; existing members keep their meaning.
 
 ## Depending on Mimir
@@ -25,7 +25,7 @@ internal static MimirSkill Foraging;
 
 private void Awake()
 {
-    Foraging = API.Register(new SkillDefinition
+    Foraging = MimirAPI.Register(new SkillDefinition
     {
         Id = "mymod.foraging",              // your mod, then the skill; never change it after release
         Name = "$mymod_skill_foraging",     // a translation token
@@ -113,7 +113,7 @@ Foraging.Disable("gathering", "MyMod.BossFight");
 Foraging.Enable("gathering", "MyMod.BossFight");
 
 // Switch off another mod's version for the whole session.
-Mimir.API.Disable("building", "valchitecture.building.reach", "mymod");
+MimirAPI.Disable("building", "valchitecture.building.reach", "mymod");
 ```
 
 The source names who disabled it, so two mods never undo each other: the ability stays off
@@ -396,7 +396,7 @@ modifiers multiply:
 Foraging.AddGainModifier(player => player.GetSEMan().HaveStatusEffect(SEMan.s_statusEffectRested) ? 1.1f : 1f);
 
 // Every skill, the game's and other mods': Run 20% faster.
-API.AddGainModifier((player, type) => type == Skills.SkillType.Run ? 1.2f : 1f);
+MimirAPI.AddGainModifier((player, type) => type == Skills.SkillType.Run ? 1.2f : 1f);
 ```
 
 Keep the delegate to remove it later with `RemoveGainModifier`.
@@ -470,7 +470,7 @@ registration.
 `Track` takes on a skill Mimir did not register, so it can have abilities:
 
 ```csharp
-MimirSkill woodcutting = API.Track(Skills.SkillType.WoodCutting);
+MimirSkill woodcutting = MimirAPI.Track(Skills.SkillType.WoodCutting);
 woodcutting.AddAbility("timber", "$mymod_ability_timber", 40);
 ```
 
@@ -481,10 +481,10 @@ one skill. The console name defaults to the type's name, lowercased.
 
 ```csharp
 Foraging.Unlocked += ability => { /* refresh a hint, add a recipe */ };
-API.Unlocked += (skill, ability) => { /* every skill */ };
+MimirAPI.Unlocked += (skill, ability) => { /* every skill */ };
 
 Foraging.LeveledUp += level => { /* level is the new level */ };
-API.LeveledUp += (skill, level) => { /* every skill Mimir keeps */ };
+MimirAPI.LeveledUp += (skill, level) => { /* every skill Mimir keeps */ };
 
 Ability next = Foraging.NextAbility;   // the next one to unlock, or null
 ```
@@ -527,7 +527,7 @@ game's included, when experience raises it.
 or null), `Weapon`, `WeaponFilter`, `Name`, `Enabled` and `Current`. `Perk` has `Skill`, `Name`,
 `Unit`, `Requires`, `Enabled` and `Current`.
 
-## API
+## MimirAPI
 
 | Member | Gives |
 |---|---|
@@ -553,7 +553,7 @@ The readers that take names use only system types, so reflection works:
 ```csharp
 if (Chainloader.PluginInfos.TryGetValue("NullSignal.Mimir", out PluginInfo info))
 {
-    Type api = info.Instance.GetType().Assembly.GetType("Mimir.API");
+    Type api = info.Instance.GetType().Assembly.GetType("Mimir.MimirAPI");
     MethodInfo isUnlocked = api?.GetMethod("IsUnlocked");
     bool edit = isUnlocked != null && (bool)isUnlocked.Invoke(null, new object[] { "building", "edit" });
 }

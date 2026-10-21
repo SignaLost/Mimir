@@ -54,7 +54,7 @@ skill's unlocks and fortified level.
 
 ## For mod authors
 
-`Mimir.API` registers or tracks a skill and reads levels and unlocks. The skill it hands
+`MimirAPI` registers or tracks a skill and reads levels and unlocks. The skill it hands
 back adds abilities and moves their levels, adds stat bonuses and scales gains. `Ramp`
 grows values with a level, and `Mimir.Events` reports the player's actions for giving
 experience. The FAQ has a guide with

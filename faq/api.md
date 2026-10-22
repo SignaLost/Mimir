@@ -445,18 +445,22 @@ so it never passes the skill, and on death the skill falls back to it. The skill
 gains are multiplied by 1.5 meanwhile, as deaths can cost more once the two drift apart;
 the fortified level's share is of the gain before that boost. The fortified level starts
 where a death would leave the skill in the game, so fortifying begins costing no more than
-the game. A world with a lighter death penalty softens the fall to match, and one without
+the game. It never trails the skill by more than `Max Gap` levels (12 by default) and never
+passes `Max Fortified Level` (100 by default); one pulled up to a limit starts its next level
+from nothing. A world with a lighter death penalty softens the fall to match, and one without
 any costs nothing. A skill that stops fortifying forgets its fortified level, which starts
 over the same way if it fortifies again.
 
 ```csharp
 Foraging.Fortify.Enabled = true;
 Foraging.Fortify.MaxRate = 0.5f;   // optional; null follows Mimir's settings
+Foraging.Fortify.MaxGap = 8;        // optional
 ```
 
 Each fortify setting left null follows Mimir's own, which a server sets: `Fortify` (which
 skills fortify: those their mods choose, every skill including the game's, or none),
-`Rate Per Level`, `Max Rate` and `Active Rate`. With `Fortify` set to every skill, a skill
+`Rate Per Level`, `Max Rate`, `Active Rate`, `Max Gap` and `Max Fortified Level` (`MaxLevel`
+on a skill). With `Fortify` set to every skill, a skill
 fortifies unless its mod sets `Enabled` to false; set to none, nothing fortifies.
 `Fortify.Level` and `Fortify.Progress` read the character's fortified level, and
 `mimir stats` shows it. Resetting a skill, by `resetskill` or otherwise, resets it, and a

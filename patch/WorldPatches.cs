@@ -107,13 +107,13 @@ internal static class StoreGui_SellItem_Patch
     }
 }
 
-/// <summary>Raises the skill-raised event with the factor after Mimir's gain prefix scaled it.</summary>
+/// <summary>Raises the skill-raised event with the factor after Mimir's gain prefix scaled it, unless another mod blocked the gain.</summary>
 [HarmonyPatch(typeof(Skills), nameof(Skills.RaiseSkill))]
 internal static class Skills_RaiseSkill_Event_Patch
 {
-    private static void Postfix(Skills __instance, Skills.SkillType skillType, float factor)
+    private static void Postfix(Skills __instance, Skills.SkillType skillType, float factor, bool __runOriginal)
     {
-        if (skillType != Skills.SkillType.None && Local.Is(__instance.m_player))
+        if (__runOriginal && skillType != Skills.SkillType.None && Local.Is(__instance.m_player))
         {
             Events.RaiseSkillRaised(__instance.m_player, skillType, factor);
         }

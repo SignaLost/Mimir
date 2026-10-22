@@ -77,8 +77,8 @@ the `Mimir` namespace itself.
 | `api/` | The public API: `API`, `MimirSkill`, abilities, bonuses, perks, stats, events, ramps, curves, diminishing returns |
 | `common/` | Settings, logging, localization, embedded resources, safe event invocation |
 | `core/` | The skill registry, gains and modifiers, unlocks, bonus totals, the experience events, and the `mimir` console command |
-| `modules/` | Fortifying, unlock notices, and the Compendium's Skill Abilities page |
-| `compatibility/` | SeneaL UI and SeneaL API support |
+| `modules/` | Fortifying, unlock notices, the Compendium's Skill Abilities page and the game's skill effects |
+| `compatibility/` | SeneaL UI, SeneaL API, Impactful Skills and VikingsDoSwim support, and the Fortify Skills Redux warning |
 | `patch/` | Every Harmony patch |
 | `Thunderstore/` | The package icon, copied into the output folder |
 | `faq/` | The mod page's FAQ entries, copied into the output folder |

@@ -1,5 +1,6 @@
 using BepInEx.Configuration;
 using Mimir.Modules;
+using Mimir.Compatibility;
 using Mimir.Core;
 
 namespace Mimir.Common;
@@ -26,10 +27,22 @@ internal static class Cfg
             Synced("Largest share of experience the fortified level gets.", new AcceptableValueRange<float>(0f, 1f)));
         Fortifying.ActiveRate = config.Bind(SecFortify, "Active Rate", 1.5f,
             Synced("Experience multiplier for fortifying skills.", new AcceptableValueRange<float>(0.1f, 5f)));
+        Fortifying.MaxGap = config.Bind(SecFortify, "Max Gap", 12,
+            Synced("Most levels a fortified level may trail its skill by.", new AcceptableValueRange<int>(1, 100)));
+        Fortifying.MaxFortified = config.Bind(SecFortify, "Max Fortified Level", 100,
+            Synced("Highest level a skill can be fortified to.", new AcceptableValueRange<int>(1, 100)));
+        FortifyNotices.Setting = config.Bind(SecFortify, "Fortify Notices", FortifyNotice.Effects,
+            Unsynced("How fortified level-ups show: with blue level-up effects, the notice only, or not at all."));
+        FortifiedDisplay.Show = config.Bind(SecFortify, "Show Fortified Levels", true,
+            Unsynced("Shows fortified levels and their progress in the skills panel."));
 
         AbilityPage.Show = config.Bind(SecCompendium, "Skill Abilities Page", true, Unsynced("Adds a compendium page listing skill perks and abilities."));
         AbilityPage.HideLocked = config.Bind(SecCompendium, "Hide Locked Descriptions", false,
             Synced("Hides what an ability does until it unlocks."));
+        SkillEffects.Show = config.Bind(SecCompendium, "Show Game Skill Effects", true,
+            Unsynced("Lists what the game's own skills do at your level as perks on the Skill Abilities page."));
+        ImpactfulSkills.Absorb = config.Bind(SecCompendium, "Absorb Impactful Skills", true,
+            Unsynced("Lists Impactful Skills' perks as abilities on the Skill Abilities page and removes its Skill Perks page."));
     }
 
     private static ConfigDescription Unsynced(string description)

@@ -10,10 +10,13 @@ using UnityEngine;
 namespace Mimir.Patch;
 /// <summary>
 ///     Applies stat bonuses where the game reads the player's base stat values. Each read stays in place and the
-///     value is adjusted right after it, so other mods' transpilers that look for the same reads still find them.
-///     Hooks for the player's own stats take the method's <c>this</c> as the owner; item and attack values need no owner.
+///     value is adjusted right after it, so other mods' transpilers that look for the same reads still find them. It
+///     runs before other transpilers, since some replace those reads. Hooks for the player's own stats take the
+///     method's <c>this</c> as the owner; item and attack values need no owner.
 /// </summary>
 [HarmonyPatch]
+[HarmonyPriority(Priority.First)]
+[HarmonyBefore("MidnightsFX.ImpactfulSkills")]
 internal static class StatReads
 {
     private readonly struct Read

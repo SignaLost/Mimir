@@ -15,6 +15,7 @@ internal static class SeneaLTexts
     private static FieldInfo _view;
     private static FieldInfo _text;
     private static FieldInfo _body;
+    private static FieldInfo _count;
     private static MethodInfo _applied;
     private static MethodInfo _offset;
     private static MethodInfo _restore;
@@ -26,6 +27,21 @@ internal static class SeneaLTexts
         {
             object view = View();
             return view != null ? _text.GetValue(view) as TMP_Text : null;
+        }
+    }
+
+    /// <summary>
+    ///     Makes its page list read the page names again. It only does so when the number of pages changes, so a page
+    ///     swapped for another keeps the old name, such as Impactful Skills' Skill Perks page in place of Mimir's.
+    /// </summary>
+    internal static void Relabel()
+    {
+        Resolve();
+        object view = _view != null && _count != null ? _view.GetValue(null) : null;
+
+        if (view != null)
+        {
+            _count.SetValue(view, -1);
         }
     }
 
@@ -85,6 +101,8 @@ internal static class SeneaLTexts
         Type viewType = view.FieldType;
         _text = AccessTools.Field(viewType, "_text");
         _body = AccessTools.Field(viewType, "_body");
+        FieldInfo count = AccessTools.Field(viewType, "_count");
+        _count = count != null && count.FieldType == typeof(int) ? count : null;
         _applied = AccessTools.PropertyGetter(viewType, "Applied");
         _offset = _body != null ? AccessTools.PropertyGetter(_body.FieldType, "Offset") : null;
         _restore = _body != null ? AccessTools.Method(_body.FieldType, "Restore", new[] { typeof(float) }) : null;

@@ -31,6 +31,8 @@ internal static class Fortifying
     internal static ConfigEntry<float> RatePerLevel;
     internal static ConfigEntry<float> MaxRate;
     internal static ConfigEntry<float> ActiveRate;
+    internal static ConfigEntry<int> MaxGap;
+    internal static ConfigEntry<int> MaxFortified;
 
     private static readonly Dictionary<Skills.SkillType, (float Level, float Progress)> _records = new();
     private static Player _readFor;
@@ -74,6 +76,14 @@ internal static class Fortifying
 
     internal static float ProgressOf(Skills.SkillType type) => Peek(type).Progress;
 
+    /// <summary>How far the fortified level is toward its next level, 0 to 1; 0 for a skill that does not fortify.</summary>
+    internal static float NextFraction(Skills.SkillType type)
+    {
+        (float level, float progress) = Peek(type);
+        float cost = CostAt(type, (int)level);
+        return cost > 0f ? Mathf.Clamp01(progress / cost) : 0f;
+    }
+
     /// <summary>The record, or what it would start at, without making one.</summary>
     private static (float Level, float Progress) Peek(Skills.SkillType type)
     {
@@ -84,7 +94,7 @@ internal static class Fortifying
             return (0f, 0f);
         }
 
-        return _records.TryGetValue(type, out (float Level, float Progress) record) ? record : (Start(player.m_skills, skill.m_level), 0f);
+        return Bound(type, skill.m_level, _records.TryGetValue(type, out (float Level, float Progress) record) ? record : (Start(player.m_skills, skill.m_level), 0f));
     }
 
     /// <summary>Gives the fortified level its share of the points, never past the skill's own level; a skill that does not fortify drops its record.</summary>
@@ -106,7 +116,7 @@ internal static class Fortifying
             return;
         }
 
-        float cap = Mathf.Min(MaxLevel, Mathf.Floor(skill.m_level));
+        float cap = Top(type, skill.m_level);
         (float level, float progress) = Record(skills, type, skill.m_level);
         float share = Share(type, (int)cap - (int)Mathf.Min(level, cap));
 
@@ -116,6 +126,7 @@ internal static class Fortifying
         }
 
         progress += points * share;
+        float before = level;
 
         while (level < cap && progress >= CostAt(type, (int)level))
         {
@@ -131,6 +142,11 @@ internal static class Fortifying
 
         _records[type] = (level, progress);
         Write();
+
+        if (level > before)
+        {
+            FortifyNotices.LeveledUp(type, (int)level);
+        }
     }
 
     /// <summary>The level a skill falls back to on death: toward its fortified level, scaled by the world's death penalty.</summary>
@@ -139,6 +155,19 @@ internal static class Fortifying
         Read();
         float fortified = Mathf.Min(before, Record(skills, type, before).Level);
         return before - (before - fortified) * Mathf.Clamp01(Game.m_skillReductionRate);
+    }
+
+    /// <summary>Sets a skill's fortified level within its limits, with no progress; false when it does not fortify or no character is loaded.</summary>
+    internal static bool Set(Skills.SkillType type, float level)
+    {
+        if (!Enabled(type) || !Read() || !Player.m_localPlayer.m_skills.m_skillData.TryGetValue(type, out Skills.Skill skill))
+        {
+            return false;
+        }
+
+        _records[type] = Bound(type, skill.m_level, (Mathf.Floor(Mathf.Clamp(level, 0f, MaxLevel)), 0f));
+        Write();
+        return true;
     }
 
     internal static void Reset(Skills.SkillType type)
@@ -161,15 +190,45 @@ internal static class Fortifying
     /// <summary>A skill's record, created on first use at the level the game's death penalty would leave.</summary>
     private static (float Level, float Progress) Record(Skills skills, Skills.SkillType type, float level)
     {
-        if (_records.TryGetValue(type, out (float Level, float Progress) record))
+        bool known = _records.TryGetValue(type, out (float Level, float Progress) record);
+        (float Level, float Progress) bounded = Bound(type, level, known ? record : (Start(skills, level), 0f));
+
+        if (!known || bounded != record)
         {
-            return record;
+            _records[type] = bounded;
+            Write();
         }
 
-        record = (Start(skills, level), 0f);
-        _records[type] = record;
-        Write();
-        return record;
+        return bounded;
+    }
+
+    /// <summary>
+    ///     Holds a record within the skill's limits: never above the skill or the Max Fortified Level, and never more than
+    ///     Max Gap levels below the skill. A record pulled to a limit loses its progress.
+    /// </summary>
+    private static (float Level, float Progress) Bound(Skills.SkillType type, float skillLevel, (float Level, float Progress) record)
+    {
+        float top = Top(type, skillLevel);
+        float bottom = Mathf.Min(top, Mathf.Max(0f, Mathf.Floor(skillLevel) - Gap(type)));
+
+        if (record.Level > top)
+        {
+            return (top, 0f);
+        }
+
+        return record.Level < bottom ? (bottom, 0f) : record;
+    }
+
+    /// <summary>The highest the fortified level may be: the skill's whole level, capped by the Max Fortified Level.</summary>
+    private static float Top(Skills.SkillType type, float skillLevel)
+    {
+        int cap = Registry.Find(type)?.Fortify.MaxLevel ?? MaxFortified?.Value ?? (int)MaxLevel;
+        return Mathf.Clamp(Mathf.Min(cap, Mathf.Floor(skillLevel)), 0f, MaxLevel);
+    }
+
+    private static int Gap(Skills.SkillType type)
+    {
+        return Mathf.Max(0, Registry.Find(type)?.Fortify.MaxGap ?? MaxGap?.Value ?? 12);
     }
 
     private static float Start(Skills skills, float level)

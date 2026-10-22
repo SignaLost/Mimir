@@ -89,6 +89,8 @@
 
     <Reference Include="UnityEngine" HintPath="$(ManagedPath)/UnityEngine.dll" Private="false" />
     <Reference Include="UnityEngine.CoreModule" HintPath="$(ManagedPath)/UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="UnityEngine.AudioModule" HintPath="$(ManagedPath)/UnityEngine.AudioModule.dll" Private="false" />
+    <Reference Include="UnityEngine.ParticleSystemModule" HintPath="$(ManagedPath)/UnityEngine.ParticleSystemModule.dll" Private="false" />
     <Reference Include="UnityEngine.TextRenderingModule" HintPath="$(ManagedPath)/UnityEngine.TextRenderingModule.dll" Private="false" />
     <Reference Include="UnityEngine.UI" HintPath="$(ManagedPath)/UnityEngine.UI.dll" Private="false" />
     <Reference Include="UnityEngine.UIModule" HintPath="$(ManagedPath)/UnityEngine.UIModule.dll" Private="false" />

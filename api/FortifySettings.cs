@@ -28,6 +28,12 @@ public sealed class FortifySettings
     /// <summary>Multiplier on the skill's own gains while it fortifies.</summary>
     public float? ActiveRate { get; set; }
 
+    /// <summary>The most levels the fortified level may trail the skill by.</summary>
+    public int? MaxGap { get; set; }
+
+    /// <summary>The highest the fortified level may reach, 1 to 100.</summary>
+    public int? MaxLevel { get; set; }
+
     /// <summary>Whether the skill fortifies now, by this and Mimir's settings.</summary>
     public bool Active => Fortifying.Enabled(_type);
 

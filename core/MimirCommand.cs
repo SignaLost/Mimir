@@ -4,19 +4,20 @@ using System.Globalization;
 using System.Linq;
 using Jotunn.Entities;
 using Mimir.Common;
+using Mimir.Modules;
 
 namespace Mimir.Core;
 
 /// <summary>
 ///     The <c>mimir</c> console command, registered through Jotunn. <c>list</c> and <c>stats</c> show every kept skill
-///     or one skill's level, fortified level, abilities and bonuses, open to all. <c>level</c>, <c>unlock</c> and
-///     <c>reset</c> change the local character's level or unlocks and require devcommands.
+///     or one skill's level, fortified level, abilities and bonuses, open to all. <c>level</c>, <c>unlock</c>,
+///     <c>reset</c> and <c>fortify</c> change the local character's level, unlocks or fortified levels and require devcommands.
 /// </summary>
 internal sealed class MimirCommand : ConsoleCommand
 {
     private const string Rule = "--------------------";
 
-    private static readonly string[] Subcommands = { "help", "list", "stats", "level", "unlock", "reset" };
+    private static readonly string[] Subcommands = { "help", "list", "stats", "level", "unlock", "reset", "fortify" };
 
     public override string Name => "mimir";
 
@@ -58,7 +59,10 @@ internal sealed class MimirCommand : ConsoleCommand
             case "reset" when Allowed(context):
                 WithSkill(context, skillName, skill => Reset(context, skill, value));
                 break;
-            case "level" or "unlock" or "reset":
+            case "fortify" when Allowed(context):
+                Fortify(context, skillName, value);
+                break;
+            case "level" or "unlock" or "reset" or "fortify":
                 break;
             default:
                 context.AddString(Names.Localize(Tokens.CmdUnknown, sub));
@@ -99,6 +103,7 @@ internal sealed class MimirCommand : ConsoleCommand
         context.AddString(Names.Localize(Tokens.CmdHelpLevel));
         context.AddString(Names.Localize(Tokens.CmdHelpUnlock));
         context.AddString(Names.Localize(Tokens.CmdHelpReset));
+        context.AddString(Names.Localize(Tokens.CmdHelpFortify));
         context.AddString("  " + Names.Localize(Tokens.CmdSkills, SkillList()));
     }
 
@@ -204,6 +209,103 @@ internal sealed class MimirCommand : ConsoleCommand
         }
 
         ShowStats(context, skill);
+    }
+
+    /// <summary>Sets or resets the fortified level of a skill, or of every skill for "all", leaving the skills as they are.</summary>
+    private static void Fortify(Terminal context, string name, string value)
+    {
+        Player player = Player.m_localPlayer;
+
+        if (!player)
+        {
+            context.AddString(Names.Localize(Tokens.CmdNoCharacter));
+            return;
+        }
+
+        bool reset = value == "reset";
+        float level = 0f;
+
+        if (!reset && (value == null || !float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out level)))
+        {
+            context.AddString(Names.Localize(Tokens.CmdNotALevel, value ?? string.Empty));
+            return;
+        }
+
+        if (string.Equals(name, "all", StringComparison.OrdinalIgnoreCase))
+        {
+            int changed = 0;
+
+            foreach (Skills.SkillType each in player.GetSkills().m_skillData.Keys.ToList())
+            {
+                if (FortifyOne(each, reset, level))
+                {
+                    changed++;
+                }
+            }
+
+            context.AddString(Names.Localize(Tokens.CmdFortifiedCount, changed.ToString()));
+            return;
+        }
+
+        if (!FindSkill(player, name, out Skills.SkillType type))
+        {
+            context.AddString(Names.Localize(Tokens.CmdUnknownSkill, name ?? string.Empty));
+            return;
+        }
+
+        string shown = SkillName(type);
+
+        if (!FortifyOne(type, reset, level))
+        {
+            context.AddString(Names.Localize(Tokens.CmdNotFortifying, shown));
+            return;
+        }
+
+        context.AddString($"{shown}: {Names.Localize(Tokens.CmdFortified)} {Number(Fortifying.LevelOf(type), "0")}");
+    }
+
+    private static bool FortifyOne(Skills.SkillType type, bool reset, float level)
+    {
+        if (!reset)
+        {
+            return Fortifying.Set(type, level);
+        }
+
+        if (!Fortifying.Enabled(type))
+        {
+            return false;
+        }
+
+        Fortifying.Reset(type);
+        return true;
+    }
+
+    /// <summary>A skill the character has, by Mimir name, the game's skill name or the name shown in game.</summary>
+    private static bool FindSkill(Player player, string name, out Skills.SkillType type)
+    {
+        type = Registry.Find(name)?.Type ?? Skills.SkillType.None;
+
+        if (type != Skills.SkillType.None || string.IsNullOrEmpty(name))
+        {
+            return type != Skills.SkillType.None;
+        }
+
+        foreach (Skills.SkillType each in player.GetSkills().m_skillData.Keys)
+        {
+            if (string.Equals(each.ToString(), name, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(SkillName(each), name, StringComparison.OrdinalIgnoreCase))
+            {
+                type = each;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static string SkillName(Skills.SkillType type)
+    {
+        return Names.Localize("$skill_" + type.ToString().ToLowerInvariant());
     }
 
     /// <summary>The ability named, or every one for "all"; false, with a message, for an unknown ability or no character.</summary>

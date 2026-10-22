@@ -31,8 +31,13 @@ First release, split out of Valchitecture so other mods can share its skill hand
   Mimir.
 - **Fortifying**: a skill can keep a fortified level that trails its own and catches up
   through a share of each gain; death drops the skill back to it. Mods choose per skill;
-  synced `Fortify` settings can fortify every skill, the game's included, or none, and set
-  the rates.
+  synced `Fortify` settings can fortify every skill, the game's included, or none, set the
+  rates, the most a fortified level may trail its skill (`Max Gap`, 12) and the highest it
+  may reach (`Max Fortified Level`, 100). The skills panel shows a thin blue bar for each fortified level's progress,
+  with the level beside it, in the game's panel and SeneaL UI's.
+  Fortified level-ups show as the game's skill-up notice, "Run (Fortified)", with blue
+  level-up effects that `Fortify Notices` can leave out or turn off.
+  A warning in the log says to pick one when Fortify Skills Redux is also installed.
 - **Death loss** per skill, as a share of the game's penalty.
 - **Level curves** per skill, with common curves in `Curves`.
 - **Level-up events** for Mimir's skills and for any skill, and `NextAbility`.
@@ -46,11 +51,17 @@ First release, split out of Valchitecture so other mods can share its skill hand
   list of abilities with their descriptions. `Hide Locked Descriptions` keeps what a
   locked ability does hidden.
   Works in SeneaL UI's compendium window.
+- **Game skill effects** on the Skill Abilities page: what the game's own skills do at your
+  level, such as damage range, attack stamina or run speed, listed as perks.
+- **Works alongside** Impactful Skills' stat changes and VikingsDoSwim's swimming. Impactful
+  Skills' perks are listed as abilities on the Skill Abilities page, in place of its own
+  Skill Perks page.
 - **Display-only perks** with `AddPerk`, listing effects a mod applies in its own code
   among the skill's perks.
 - `mimir` console command: skills, levels, abilities and bonuses; level and unlock
   changes require devcommands; unlock and reset change only the unlock, never the level.
-  `resetskill` also removes the skill's unlocks and fortified level.
+  `resetskill` also removes the skill's unlocks and fortified level. `mimir fortify` sets a
+  fortified level, or starts it over, for any skill without changing the skill.
 - `MimirAPI` for other mods: registering and tracking skills, abilities, bonuses, gain
   modifiers, ability controls, readers by name, and events for each ability unlocked and
   each level-up.

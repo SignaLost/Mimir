@@ -37,9 +37,10 @@ internal static class Skills_RaiseSkill_Gain_Patch
     }
 
     /// <summary>Gives the fortified level its share of the points, computed as Skill.Raise does, before the fortifying boost.</summary>
-    private static void Postfix(Skills __instance, Skills.SkillType skillType, float factor)
+    private static void Postfix(Skills __instance, Skills.SkillType skillType, float factor, bool __runOriginal)
     {
-        if (!__instance.m_player || __instance.m_player != Player.m_localPlayer
+        // Another mod's prefix may block the gain, such as Impactful Skills for a skill it disables.
+        if (!__runOriginal || !__instance.m_player || __instance.m_player != Player.m_localPlayer
             || !__instance.m_skillData.TryGetValue(skillType, out Skills.Skill skill) || skill.m_info == null)
         {
             return;

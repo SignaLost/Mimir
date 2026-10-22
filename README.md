@@ -46,7 +46,8 @@ and diminishing returns so repeated actions on one thing can't farm a skill.
 skill without registering a skill of its own.
 
 **Skill Abilities page.** A compendium page lists each skill's level, its perks and its
-abilities, with what each does and the level the locked ones unlock at.
+abilities, with what each does and the level the locked ones unlock at. The game's own
+skills show what they do at your level, and Impactful Skills' perks are listed there too.
 
 **One console command.** `mimir` lists every skill, shows its levels and unlocks, and with
 devcommands sets levels and unlocks for testing. The game's `resetskill` removes the

@@ -1,12 +1,14 @@
 using System;
 using HarmonyLib;
 using Mimir.Common;
+using Mimir.Compatibility;
 using Mimir.Modules;
 
 namespace Mimir.Patch;
 
 /// <summary>Adds the Skill Abilities page each time the compendium rebuilds its pages.</summary>
 [HarmonyPatch(typeof(TextsDialog), nameof(TextsDialog.UpdateTextsList))]
+[HarmonyAfter(ImpactfulSkills.Guid)]
 internal static class TextsDialog_UpdateTextsList_Patch
 {
     private static void Postfix(TextsDialog __instance)
@@ -15,6 +17,7 @@ internal static class TextsDialog_UpdateTextsList_Patch
         try
         {
             AbilityPage.Add(__instance);
+            SeneaLTexts.Relabel();
         }
         catch (Exception e)
         {

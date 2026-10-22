@@ -59,7 +59,7 @@ internal static class UnlockNotices
         {
             foreach (string line in lines)
             {
-                Show(MessageHud.MessageType.TopLeft, line);
+                Notify(line);
             }
         }
         else if (lines.Count == 1)
@@ -92,7 +92,7 @@ internal static class UnlockNotices
 
         foreach (string line in corner)
         {
-            Show(MessageHud.MessageType.TopLeft, line);
+            Notify(line);
         }
     }
 
@@ -122,12 +122,18 @@ internal static class UnlockNotices
         MessageHud.instance.QueueUnlockMsg(icon, Names.Localize(ability.Name), description);
     }
 
+    /// <summary>Shows a message in the corner, the way every Mimir notify notice does.</summary>
+    internal static void Notify(string text, Sprite icon = null)
+    {
+        Show(MessageHud.MessageType.TopLeft, text, icon);
+    }
+
     /// <summary>Shows a message through Player.Message, which keeps it out of the message log.</summary>
-    private static void Show(MessageHud.MessageType type, string text)
+    private static void Show(MessageHud.MessageType type, string text, Sprite icon = null)
     {
         if (Player.m_localPlayer)
         {
-            Player.m_localPlayer.Message(type, text);
+            Player.m_localPlayer.Message(type, text, 0, icon);
         }
     }
 }

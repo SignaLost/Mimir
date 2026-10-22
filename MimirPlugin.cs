@@ -8,6 +8,7 @@ using Jotunn.Managers;
 using Jotunn.Utils;
 using Mimir.Core;
 using Mimir.Common;
+using Mimir.Compatibility;
 
 namespace Mimir;
 
@@ -23,6 +24,8 @@ namespace Mimir;
 [BepInProcess("valheim_server.exe")]
 [BepInProcess("valheim_server.x86_64")]
 [BepInDependency(Jotunn.Main.ModGuid)]
+[BepInDependency("seneaL.valheim.ui", BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency("blacks7ar.VikingsDoSwim", BepInDependency.DependencyFlags.SoftDependency)]
 [NetworkCompatibility(CompatibilityLevel.NotEnforced, VersionStrictness.None)]
 public sealed class MimirPlugin : BaseUnityPlugin
 {
@@ -46,6 +49,11 @@ public sealed class MimirPlugin : BaseUnityPlugin
         ApplyPatches();
 
         Logger.LogInfo($"{PluginName} {PluginVersion} loaded.");
+    }
+
+    private void Start()
+    {
+        FortifySkillsRedux.Check();
     }
 
     private void Update()

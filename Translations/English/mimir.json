@@ -32,7 +32,7 @@
   "mimir_page_level": "Level $1",
   "mimir_page_perks": "Perks",
   "mimir_page_abilities": "Abilities",
-  "mimir_cmd_help": "<help|list|stats|level|unlock|reset> - skill levels and unlocks of mods using Mimir",
+  "mimir_cmd_help": "<help|list|stats|level|unlock|reset|fortify> - skill levels and unlocks of mods using Mimir",
   "mimir_cmd_help_list": "list - the skills Mimir keeps and their console names",
   "mimir_cmd_help_stats": "stats <skill> - a skill's levels, abilities and bonuses",
   "mimir_cmd_help_level": "level <skill> <n, +n or -n> - set or change a skill; raising it unlocks what it passes, nothing is locked (devcommands)",

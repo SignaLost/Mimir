@@ -2,8 +2,8 @@
 
 Everything goes through `MimirAPI`, a public static class in Mimir.dll, and the
 `MimirSkill` it hands back. It works for the local player, must be called from the main
-thread, and reads 0 while no character is loaded. `MimirAPI.Version` rises when members are
-added; existing members keep their meaning.
+thread, and reads 0 while no character is loaded. `MimirAPI.Version` rises when members
+are added; existing members keep their meaning.
 
 ## Depending on Mimir
 
@@ -36,20 +36,25 @@ private void Awake()
 }
 ```
 
-The identifier is hashed into the game's skill type, so changing it loses every
-character's progress. `EarlyLevelCost` scales gains so no level costs less than that many
-points; 0 keeps the game's pace.
+The id is hashed into the game's skill type, so changing it loses every character's
+progress. `EarlyLevelCost` scales gains so no level costs less than about that many
+points; 0 keeps the game's pace. `SkillDefinition` also takes `Key` (the console name,
+by default the last part of the id), `IncreaseStep` (the game's multiplier on the skill's
+experience), `LevelCurve`, `DeathLoss` and `Fortify`, described below. `Register` returns
+the skill already registered under the same id, or null, logged, when the id is invalid
+or Jotunn refuses it.
 
 ## Abilities
 
 Add them once, after registering. Each takes an id, a name (a translation token), a level
-and, optionally, its own unlock notice and a description for the Skill Abilities page (also tokens):
+and, optionally, its own unlock notice and a description for the Skill Abilities page
+(also tokens):
 
 ```csharp
 private static Ability Gathering;
 
-Gathering = Foraging.AddAbility("gathering", "$mymod_ability_gathering", 20, "$mymod_ability_gathering_unlocked",
-    "$mymod_ability_gathering_description");
+Gathering = Foraging.AddAbility("gathering", "$mymod_ability_gathering", 20,
+    "$mymod_ability_gathering_unlocked", "$mymod_ability_gathering_description");
 Foraging.AddAbility("double", "$mymod_ability_double_pick", 50);
 Foraging.AddAbility("seeds", "$mymod_ability_seed_saver", 50);
 ```
@@ -64,17 +69,14 @@ Ids build on each other:
 An ability's `Id` is its skill's id and its own; unlocks are saved under it. Its `Key` is
 its own part, typed in the console after the skill (`mimir unlock foraging gathering`).
 Every call that takes an ability accepts either. Ids are lowercased and may use letters,
-digits, `_` and `-`; a skill's id may also use `.`. Each ability id is unique within its
-skill, so a mod adding to another mod's skill picks an id that skill does not use.
+digits, `_` and `-`; a skill's id may also use `.`. An ability id must be unique within its
+skill, so a mod adding to another mod's skill picks one that skill does not use;
+`AddAbility` returns null, with a warning, for a taken id.
 
-Skill, ability and description names are translation tokens, given when they are
-registered; add their text to your mod's translation files. The unlock notice is one too,
-such as `"mymod_ability_gathering_unlocked": "You can now gather"`; `$1` in it is filled
-with the ability's name. Without one, Mimir shows its own "`$1` unlocked", which its own
-translation file covers.
-
-Mimir announces whatever is earned at once together, so the two abilities at 50 above show
-as "New abilities unlocked" with each listed in the corner. Nothing needs grouping by hand.
+The unlock notice is a token too, such as `"mymod_ability_gathering_unlocked": "You can
+now gather"`; `$1` in it is filled with the ability's name. Without one, Mimir shows its
+own "`$1` unlocked". Abilities earned at once are announced together, so the two at 50
+above show as "New abilities unlocked" with each listed in the corner.
 
 Each unlocks when the skill's level reaches it and stays unlocked, saved with the
 character. Check an ability where the feature runs with `Has`, which is cheap enough for
@@ -87,9 +89,9 @@ if (Foraging.Has(Gathering) && MyConfig.Gathering.Value)
 }
 ```
 
-`IsUnlocked(id)` says whether the character has the unlock at all, disabled or not. Use
-`Level` or `Factor` for effects that should follow the current level, as the game's own
-skills do.
+`IsUnlocked(id)` says whether the character has the unlock at all, disabled or not.
+Use `Level` or `Factor` for effects that should follow the current level, as the game's
+own skills do.
 
 ## Full control
 
@@ -99,8 +101,8 @@ Every part of an ability is open to mods, including another mod's abilities:
 |---|---|---|
 | Add | `AddAbility(id, name, level, unlockText, description)` | Until removed or the game closes |
 | Remove | `RemoveAbility(id)` | Until added again |
-| Unlock (set) | `Unlock(id)` | Saved with the character |
-| Lock (unset) | `Lock(id)` | Saved, until the next level-up |
+| Unlock | `Unlock(id)` | Saved with the character |
+| Lock | `Lock(id)` | Saved, until the next level-up |
 | Disable | `Disable(id, source)` | Until every source enables it, or the game closes |
 | Enable | `Enable(id, source)` | |
 
@@ -118,7 +120,8 @@ MimirAPI.Disable("building", "valchitecture.building.reach", "mymod");
 
 The source names who disabled it, so two mods never undo each other: the ability stays off
 until every source has enabled it. Disabling keeps the unlock, is never saved, and works
-for an id not added yet, so it can be done from `Awake` whatever the load order.
+for an ability not added yet, so it can be done from `Awake` once the skill exists;
+depend on the mod that registers it.
 
 **Remove** takes the ability out of the skill: `Has` is false for it, even for the mod
 holding it, and it leaves the notices and the console. The character's unlock stays saved
@@ -129,16 +132,15 @@ characters who had theirs keep the unlock; under a new id, yours is earned afres
 **Unlock** grants an ability as reaching its level would, with its notice and event.
 **Lock** removes the unlock but leaves the level alone. The ability stays locked, across
 relogs, until the character's next level-up, which unlocks again whatever their level
-covers. To keep one off, disable it, and enable it again when your reason ends; or remove
-it.
+covers. To keep one off, disable it, or remove it.
 
 ## Settings for your skill
 
 Mimir keeps no settings of its own for a skill; your mod owns them and decides what to
 offer. Pass changes on, so a server's synced values apply for everyone.
 
-**Skill speed.** `GainRate` multiplies every gain, on top of Mimir's pace and the game's
-own rules, so one setting covers how fast the skill levels:
+**Skill speed.** `GainRate` multiplies every gain, on top of Mimir's pace and the
+game's own rules:
 
 ```csharp
 ConfigEntry<float> gain = Config.Bind("Progression", "Skill Gain", 1f,
@@ -177,7 +179,8 @@ float speed = Ramp.Linear(Foraging.Level, 0, 100, 1f, 1.5f);
 ```
 
 `Stepped` returns `below` (0 by default) under its starting level; a negative step shrinks
-toward the limit. `Linear` holds its end value beyond `to`.
+toward the limit. `Linear` returns its start value under `from` (or `below`, if given) and
+holds its end value beyond `to`.
 
 ## Stat bonuses
 
@@ -199,19 +202,17 @@ Archery.AddBonus(Stat.Damage, BonusType.Percent, level => level * 0.25f).Weapon 
 Archery.AddBonus(Stat.DrawTime, BonusType.Percent, level => level * -0.3f).Weapon = Skills.SkillType.Bows;
 ```
 
-The function gets the skill's `Level`, status effects included, and returns the amount:
-in the stat's own units for `Flat`, or a percentage for `Percent` (10 is 10% more, -20 is
-20% less). Bonuses from every skill and mod add up, then apply as
+The function gets the skill's `Level`, status effects included, and returns the amount: in
+the stat's own units for `Flat`, or a percentage for `Percent` (10 is 10% more, -20 is 20%
+less). Bonuses from every skill and mod add up, then apply as
 `value × (1 + percent ÷ 100) + flat`, never below 0. Health, block power and the stagger
 limit never go below 1, and a negative value, such as a stamina refund, keeps its sign.
 
 These are real stats, not status effects. Mimir changes each value where the game computes
-it: a base value such as base health or run speed where the game reads it, or a computed
-one such as armor or an attack's stamina cost where the game returns it. So food,
-equipment, skills and status effects apply as they do in the base game. Mimir never writes
-the player's own values, so removing a bonus or uninstalling Mimir returns them to normal.
-Max health, stamina and eitr follow when the game next totals food, about once a second
-(less often with a longer `FoodDuration`). Food duration can shorten to a tenth at most.
+it, so food, equipment, skills and status effects apply as they do in the base game, and
+it never writes the player's own values, so removing a bonus or uninstalling Mimir returns
+them to normal. Max health, stamina and eitr follow when the game next updates food. Food
+duration can shorten to a tenth at most.
 
 | Group | Stats | Types |
 |---|---|---|
@@ -230,11 +231,12 @@ Max health, stamina and eitr follow when the game next totals food, about once a
 
 A type a stat doesn't take throws. `AttackEitr` and `AttackHealth` cover spells too.
 Attack costs only change on attacks that have one, so a flat bonus never adds a cost.
+Attack speed has no stat: the game has no value for it, only the speeds set in each
+attack's animation.
 
 **Limiting a weapon stat.** Weapon stats apply to every weapon unless the bonus says
-otherwise. `Weapon` limits it to one weapon type, which is the skill the weapon trains: the
-item's `m_shared.m_skillType`, as the game itself uses to pick the skill an attack raises.
-`WeaponFilter` narrows it further with any test of the item:
+otherwise. `Weapon` limits it to one weapon type, the skill the weapon trains (the item's
+`m_shared.m_skillType`). `WeaponFilter` narrows it further with any test of the item:
 
 ```csharp
 // Swords only.
@@ -262,15 +264,11 @@ MyConfig.CarryBonus.SettingChanged += (_, _) => carry.Enabled = MyConfig.CarryBo
 ```
 
 A bonus tied to an ability applies while `Has` holds for it; passing a null ability, such
-as one `AddAbility` refused, throws rather than applying from level 0.
-
-`Current` gives the amount applied right now, for a tooltip or readout; `mimir stats`
-lists each one, and the Skill Abilities page shows each that gives something as a perk,
-under the stat's name or the token set in `Name`. `RemoveBonus` takes one out. A function that throws is logged once and
-switched off until the game restarts.
-
-Attack speed has no stat: the game has no value for it, only speeds set in each attack's
-animation.
+as one `AddAbility` refused, throws rather than applying from level 0. `Current` gives the
+amount applied right now, for a tooltip or readout; `mimir stats` lists each one, and the
+Skill Abilities page shows each that gives something as a perk, under the stat's name or
+the token set in `Name`. `RemoveBonus` takes one out. A function or filter that throws is
+logged once and the bonus switched off until the game restarts.
 
 ## Perks for your own effects
 
@@ -289,8 +287,8 @@ game restarts.
 
 ## Experience events
 
-`Mimir.Events` reports what the local player does, so a skill gives experience for the
-actions it is about and its mod can spend its code on abilities:
+`Events` reports what the local player does, so a skill gives experience for the actions
+it is about and its mod can spend its code on abilities:
 
 ```csharp
 Events.Harvested += (player, crop) => Farming.Raise(player, 1f);
@@ -302,7 +300,8 @@ Events.Killed += (player, kill) => Hunting.Raise(player, kill.Detailed ? kill.Le
 
 Every handler gets the player first. Each event fires once per action, as the game carries
 it out, on the local player's game; a failed action raises nothing: a block that breaks, a
-failed upgrade, a dodge without stamina, a piece another mod stopped from being placed.
+failed upgrade, a dodge without stamina, a piece another mod stopped from being placed. A
+handler that throws is logged and the rest still run.
 
 **One weapon type.** `Events.Swords`, `Knives`, `Clubs`, `Polearms`, `Spears`, `Axes`,
 `Bows`, `Crossbows`, `Unarmed`, `Pickaxes`, `ElementalMagic` and `BloodMagic` each have:
@@ -325,7 +324,7 @@ general events below are raised as well.
 | Defense | `Blocked` | hit | A block goes through, parries included |
 | | `Parried` | hit | A parry goes through |
 | | `Dodged` | | A dodge starts, stamina paid |
-| | `DodgedHit` | | A swing, area attack or projectile passes through the player mid-dodge, as the game counts it; once per dodge |
+| | `DodgedHit` | | An attack passes through the player mid-dodge, as the game counts it; once per dodge |
 | | `DamageTaken` | hit, health lost | The player loses health, to hits, burning, poison and the like |
 | Movement | `Walked`, `Ran`, `Sneaked`, `Swam` | meters | Moving on foot, running, sneaking, swimming; about once a second |
 | | `Sailed`, `Rode` | meters | Steering a ship, riding a mount; about once a second |
@@ -336,7 +335,7 @@ general events below are raised as well.
 | | `Foraged` | pickable | Anything else is picked: berries, mushrooms, flowers and the like |
 | | `PickedUp` | item, amount | An item is picked up off the ground |
 | | `Planted` | plant | A seed or sapling is planted; also raises `Placed` |
-| | `Chopped` | object, hit | A tree or log is hit, whether or not the hit does damage; also raises `ObjectHit` |
+| | `Chopped` | object, hit | A tree or log is hit, damaging or not; also raises `ObjectHit` |
 | | `Mined` | object, hit | A rock or deposit is hit, or anything with pickaxe damage, damaging or not; also raises `ObjectHit` |
 | | `ObjectHit` | object, hit | Any tree, log, rock, building piece or other object is hit |
 | | `Fished` | fish | A fish is reeled in; the game's fish console command counts too |
@@ -350,28 +349,26 @@ general events below are raised as well.
 | | `Refined`, `Fueled` | station, (item) | An item or fuel goes into a smelter, kiln, windmill, spinning wheel or similar |
 | | `Fermented`, `Tapped` | fermenter, (item) | A fermenter is filled or tapped |
 | | `Ate`, `Consumed` | item | Food is eaten; anything consumed, meads included |
-| Building | `Placed` | piece | A piece is built with a build tool; the piece is the one just placed |
+| Building | `Placed` | piece | A piece is built with a build tool |
 | | `Removed` | piece | A piece is taken down; read it, don't keep it |
-| | `Repaired` | piece | A piece is repaired, by the hammer or a mod calling the game's repair |
+| | `Repaired` | piece | A damaged piece is repaired |
 | Other | `LeveledUp` | skill type, level | Any skill gains a level through experience |
 | | `Explored` | pixels | New map is revealed |
 | | `Slept` | | The player wakes after sleeping through the night |
 | | `Bought`, `Sold` | item, coins | Trading with a merchant |
-| | `SkillRaised` | skill type, amount | Any skill is raised, after status effects and Mimir's pace, modifiers and fortifying boost; even at level 100 |
+| | `SkillRaised` | skill type, amount | Any skill is raised, with the amount after status effects and Mimir's scaling; even when nothing is gained |
 
 **Kills.** The game tells every player who damaged a creature about its death, so `Killed`
 works whoever owned it, with its name, whether it was a boss, how it was hurt (`Weapon`),
-and how many players took part. Its prefab, level, maximum health, the skill of the killing
-blow and whether this player landed it come from Mimir on the game that owned it:
-`Detailed` is false, and those are empty, when that game, another player's or a dedicated
-server's, doesn't run Mimir. The weapon types' `Killed` needs those details.
+how many players took part and whether cheats were used. Its prefab, level, maximum
+health, the skill of the killing blow and whether this player landed it come from Mimir
+on the game that owned it: `Detailed` is false, and those are empty, when that game,
+another player's or a dedicated server's, doesn't run Mimir. The weapon types' `Killed`
+needs those details.
 
 **Taming** finishes on the game that owns the creature, which credits the closest player
 within 30 m, as the game's own message does; it needs Mimir on that game. Feeding and
 breeding have no event: the game never records which player was responsible.
-
-**Crops.** Harvested uses the game's own tag for crops, the one behind its harvest stats.
-`Picked` counts each pick, including a bush picked again after it grows back.
 
 Mimir doesn't scale or limit these; a mod that gives experience for picking items up, say,
 decides for itself whether items the player dropped should count.
@@ -418,16 +415,19 @@ Events.Placed += (player, piece) => Building.Raise(player, 1f * Spots.Next(piece
 
 `Next` returns the share to pay, from 1 down to `floor`, and counts the use. Every use
 restarts the window, so a key pays in full again only after a full window untouched. With
-`falloff: 0`, a key pays once, then nothing until it is left alone that long.
+`falloff: 0`, a key pays once, then nothing until it is left alone that long. `Clear`
+forgets every use.
 
 ## Level curves
 
 `LevelCurve` sets the experience each level needs, given the whole level; the game's curve
-is used when it is null. `Curves` has the usual ones:
+is used when it is null, and for a result that is not a positive number. `Curves` has the
+usual ones:
 
 ```csharp
 Foraging.LevelCurve = Curves.Scaled(2f);              // every level twice the game's cost
 Foraging.LevelCurve = Curves.Linear(10f, 2f);         // 10, 12, 14, ...
+Foraging.LevelCurve = Curves.Flat(25f);               // every level the same
 Foraging.LevelCurve = level => level < 20 ? 5f : Curves.Game(level);
 ```
 
@@ -436,20 +436,21 @@ It applies wherever the game asks, so progress bars and level-ups follow it, and
 
 ## Death and fortifying
 
-`DeathLoss` scales the game's death penalty for the skill: 1 as the game, 0.5 half, 0 none,
-which also keeps the progress toward the next level.
+`DeathLoss` scales the game's death penalty for the skill: 1 as the game, 0.5 half,
+0 none, which also keeps the progress toward the next level. It is unused while the
+skill fortifies.
 
 A fortifying skill instead keeps a fortified level that trails its own in the background.
-It gains a share of every gain, 0.1 more for each level the skill is above it up to 0.8,
-so it never passes the skill, and on death the skill falls back to it. The skill's own
-gains are multiplied by 1.5 meanwhile, as deaths can cost more once the two drift apart;
-the fortified level's share is of the gain before that boost. The fortified level starts
-where a death would leave the skill in the game, so fortifying begins costing no more than
-the game. It never trails the skill by more than `Max Gap` levels (12 by default) and never
-passes `Max Fortified Level` (100 by default); one pulled up to a limit starts its next level
-from nothing. A world with a lighter death penalty softens the fall to match, and one without
-any costs nothing. A skill that stops fortifying forgets its fortified level, which starts
-over the same way if it fortifies again.
+It gets a share of every gain, `Rate Per Level` (0.1) more for each level the skill is
+above it up to `Max Rate` (0.8), so it never passes the skill, and on death the skill falls
+back to it. The skill's own gains are multiplied by `Active Rate` (1.5) meanwhile; the
+fortified level's share is of the gain before that boost. The fortified level starts where
+a death would leave the skill in the game, so fortifying begins costing no more than the
+game. It never trails the skill by more than `Max Gap` levels (12) and never passes
+`Max Fortified Level` (100); one pulled up to a limit starts its next level from nothing.
+A world with a lighter death penalty softens the fall to match, and one without any costs
+nothing. A skill that stops fortifying forgets its fortified level, which starts over the
+same way if it fortifies again.
 
 ```csharp
 Foraging.Fortify.Enabled = true;
@@ -457,17 +458,13 @@ Foraging.Fortify.MaxRate = 0.5f;   // optional; null follows Mimir's settings
 Foraging.Fortify.MaxGap = 8;        // optional
 ```
 
-Each fortify setting left null follows Mimir's own, which a server sets: `Fortify` (which
-skills fortify: those their mods choose, every skill including the game's, or none),
-`Rate Per Level`, `Max Rate`, `Active Rate`, `Max Gap` and `Max Fortified Level` (`MaxLevel`
-on a skill). With `Fortify` set to every skill, a skill
-fortifies unless its mod sets `Enabled` to false; set to none, nothing fortifies.
-`Fortify.Level` and `Fortify.Progress` read the character's fortified level, and
-`mimir stats` shows it. Resetting a skill, by `resetskill` or otherwise, resets it, and a
-world that resets skills on death clears it.
-
-`SkillDefinition` takes `LevelCurve`, `DeathLoss` and `Fortify` too, to set them at
-registration.
+`FortifySettings` has `Enabled`, `RatePerLevel`, `MaxRate`, `ActiveRate`, `MaxGap` and
+`MaxLevel`; each left null follows the matching Mimir setting, which a server sets. With
+`Fortify` set to every skill, a skill fortifies unless its mod sets `Enabled` to false;
+set to none, nothing fortifies. `Active` says whether the skill fortifies now, and
+`Level` and `Progress` read the character's fortified level; `mimir stats` shows it.
+Resetting a skill, by `resetskill` or otherwise, resets it, and a world that resets
+skills on death clears it.
 
 ## The game's skills and other mods'
 
@@ -479,7 +476,8 @@ woodcutting.AddAbility("timber", "$mymod_ability_timber", 40);
 ```
 
 Tracking a skill again returns the same `MimirSkill`, so several mods can add abilities to
-one skill. The console name defaults to the type's name, lowercased.
+one skill. Its id and console name are the type's name, lowercased, unless `Track` is
+given another console name.
 
 ## Reacting to unlocks and level-ups
 
@@ -495,23 +493,23 @@ Ability next = Foraging.NextAbility;   // the next one to unlock, or null
 
 Unlock events are raised for each ability as it unlocks, whatever the `Unlock Notices`
 setting. Level-ups are raised whatever raised the level, the console or a mod included,
-once per frame with the new level, so a jump of several levels is one event.
-Loading a character raises neither for what it already had, so check `Has` where a feature
-runs rather than relying on the events alone. `Events.LeveledUp` covers every skill, the
+once with the new level, so a jump of several levels is one event. Loading a character
+raises neither for what it already had, so check `Has` where a feature runs
+rather than relying on the events alone. `Events.LeveledUp` covers every skill, the
 game's included, when experience raises it.
 
 ## MimirSkill
 
 | Member | Gives |
 |---|---|
-| `Type`, `Id`, `Key`, `Name` | The game's skill type, id, console name, display name |
+| `Type`, `Id`, `Key`, `Name` | The game's skill type, id, console name, display name token |
 | `Level`, `Factor` | The level with status effects, and the same as 0 to 1 |
 | `StoredLevel` | The level without status effects |
 | `Progress`, `LevelCost` | Experience toward the next level, and what it needs |
 | `Raise(player, amount)` | Gives experience through the game's own path |
-| `SetLevel(level)` | Sets the level; raising it unlocks what it passes, nothing is ever locked |
+| `SetLevel(level)` | Sets the level and clears progress; raising it unlocks what it passes, nothing is ever locked |
 | `AddAbility(id, name, level, unlockText, description)`, `SetAbilityLevel(id, level)` | Adds an ability, or moves it |
-| `Abilities`, `GetAbility(id)` | Abilities in level order, one by id |
+| `Abilities`, `GetAbility(id)` | Abilities in level order, one by id or key |
 | `Has(ability)` | Still part of the skill, unlocked and not disabled: whether the feature should run |
 | `IsUnlocked(id)`, `UnlockLevel(id)` | Whether unlocked at all, and at what level |
 | `RemoveAbility(id)` | Takes an ability out of the skill |
@@ -522,14 +520,16 @@ game's included, when experience raises it.
 | `AddGainModifier`, `RemoveGainModifier` | Scaling this skill's gains |
 | `LevelCurve` | The experience each level needs |
 | `DeathLoss`, `Fortify` | The death penalty, and fortifying |
-| `AddBonus(stat, type, amountAtLevel, requires)`, `RemoveBonus(bonus)`, `Bonuses` | Stat bonuses that grow with the skill |
+| `AddBonus(stat, type, amountAtLevel, requires)`, `RemoveBonus(bonus)`, `Bonuses` | Stat bonuses that grow with the skill; `requires` is an ability or its id |
 | `AddPerk(name, amountAtLevel, unit, requires)`, `RemovePerk(perk)`, `Perks` | Display-only perks for effects the mod applies itself |
 | `Unlocked`, `LeveledUp` | Raised for each ability as it unlocks, and when the level rises |
 
 `Ability` has `Id` (skill id and its own), `Key` (its own part), `Name`, `UnlockText`,
-`Description` and `Level`. `Bonus` has `Skill`, `Stat`, `Type`, `Requires` (an ability's id,
-or null), `Weapon`, `WeaponFilter`, `Name`, `Enabled` and `Current`. `Perk` has `Skill`, `Name`,
-`Unit`, `Requires`, `Enabled` and `Current`.
+`Description` and `Level`. `Bonus` has `Skill`, `Stat`, `Type`, `Requires` (an ability's
+id, or null), `Weapon`, `WeaponFilter`, `Name`, `Enabled` and `Current`. `Perk` has
+`Skill`, `Name`, `Unit`, `Requires`, `Enabled` and `Current`. `Kill` has `Name`,
+`Boss`, `Weapon`, `Attackers`, `Cheated`, `Detailed`, `Prefab`, `Level`, `MaxHealth`,
+`LastHit` and `Skill`.
 
 ## MimirAPI
 
@@ -538,10 +538,10 @@ or null), `Weapon`, `WeaponFilter`, `Name`, `Enabled` and `Current`. `Perk` has 
 | `Version`, `Guid` | The API version, and `NullSignal.Mimir` |
 | `Register(definition)` | Registers a new skill |
 | `Track(type, key)` | Takes on an existing skill |
-| `Find(name)`, `Find(type)` | A skill by identifier, console name or type |
+| `Find(name)`, `Find(type)` | A skill by id or console name, or by type |
 | `All` | Every skill Mimir keeps |
-| `Level(skill)` | The level by name |
-| `Has(skill, id)`, `IsUnlocked(skill, id)`, `UnlockLevel(skill, id)`, `AbilityIds(skill)` | Abilities by name |
+| `Level(skill)` | The level by skill name |
+| `Has(skill, id)`, `IsUnlocked(skill, id)`, `UnlockLevel(skill, id)`, `AbilityIds(skill)` | Abilities by skill name |
 | `AddAbility`, `RemoveAbility`, `Unlock`, `Lock`, `Disable`, `Enable` | The same controls by skill and ability name |
 | `AddGainModifier`, `RemoveGainModifier` | Scaling every skill's gains |
 | `Unlocked`, `LeveledUp` | Raised for each ability and level-up of any skill Mimir keeps |

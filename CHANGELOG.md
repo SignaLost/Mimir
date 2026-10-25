@@ -31,4 +31,4 @@ First release. Mimir was split out of Valchitecture so other mods can share its 
   with devcommands on.
 - The game's `resetskill` command also clears a skill's unlocks and fortified level.
 - For mod authors: `MimirAPI` to register skills, add abilities and bonuses, and give
-  experience for the player's actions. See the API FAQ.
+  experience for the player's actions. See the README.

@@ -2,151 +2,124 @@
 
 ## Levels
 
-A Mimir skill is an ordinary game skill: it shows in the skills panel, rises with use,
-drops on death and is raised by anything that raises skills, such as status effects and
-the world's skill gain rate.
+A Mimir skill is a normal Valheim skill. It shows in the skills panel, goes up as you use
+it and drops when you die. Anything that raises skills, such as status effects or the
+world's skill gain rate, raises it too.
 
 ## Abilities
 
-A mod gives its skill abilities, each at a level. When the skill's level reaches an
-ability, the character unlocks it, and the unlock is saved with the character. From then
-on it stays unlocked whatever happens to the level: dying, a server raising the
-ability's level, or anything else. Status effects that raise a skill for a while never
-unlock anything.
+Each skill has abilities that unlock at certain levels. When your skill reaches that
+level, the ability unlocks and is saved with your character. From then on it stays
+unlocked, even if you die and lose levels, or a server later raises the level it needs.
+Temporary skill boosts from status effects never unlock anything.
 
-Mimir catches up on every level-up, when a character loads, and whenever a mod adds or
-moves an ability: anything the level covers that is not unlocked yet unlocks then, with its
-notice. So an ability a server moves below your level, or one a mod update adds, arrives
-right away. A skill your character has never had before unlocks what its level already
-covers silently, the first time it loads.
+If a server lowers an ability's level below yours, or a mod update adds a new one you
+already qualify for, it unlocks right away. When you first load a character with a new
+skill mod, abilities your level already covers unlock quietly, without notices.
 
-An ability a mod or the console locks stays locked, even though the level covers it, until
-the next level-up.
+An ability locked by a mod or the console stays locked until your next level-up.
 
-Mods have full control over abilities, their own and each other's: they can add and remove
-them, unlock and lock them for a character, and disable and enable them. A disabled
-ability keeps its unlock but does nothing, such as during a boss fight. Disabling is never
-saved; it lasts until every mod that disabled the ability enables it, or the game closes.
+A mod can also switch an ability off for a while, for example during a boss fight. You
+keep the unlock, but the ability does nothing until the mod turns it back on or you
+restart the game.
 
 ## Death and fortifying
 
-A skill loses the game's share of its level on death, or a part of it if its mod says so.
+When you die, a skill loses part of its level, as usual in Valheim. Some mods make their
+skills lose less.
 
-A fortifying skill keeps a second level that trails its own: each gain gives it a share,
-larger the further the skill is ahead of it, so it never passes the skill, and the skill
-itself gains faster while it fortifies. On death the skill falls back to the fortified
-level. It starts where the game's penalty would leave the skill, so fortifying begins
-costing no more than the game, and it never trails the skill by more than `Max Gap`
-levels, 12 by default, so a death costs at most that much. A server can cap how high it
-goes with `Max Fortified Level`. A world with a lighter death penalty softens the fall, and
-one without any costs nothing. A mod decides whether its skills fortify; a server can
-instead fortify every skill, the game's included, or none.
+A skill can also fortify. It then keeps a second, fortified level that slowly follows the
+real one as you gain experience, and the skill gains experience faster while it does.
+When you die, the skill only drops back to its fortified level. The fortified level never
+falls more than `Max Gap` levels behind (12 by default), so a death costs at most that
+many levels. At the start, a death costs no more than it would without fortifying. A
+server can cap how high fortified levels go with `Max Fortified Level`. In a world with a
+lighter death penalty you lose less, and with none you lose nothing.
 
-The skills panel shows each fortifying skill's fortified level in blue, and a thin blue bar
-under the progress bar that fills toward the next fortified level. The game's panel shows
-the level as "22 (18)"; SeneaL UI's shows it at the end of the blue bar. `Show Fortified
-Levels` turns this off. Each fortified level earned shows as the game's own skill-up
-notice, named "Run (Fortified)", with the game's level-up effects in blue; `Fortify
-Notices` can leave the effects out or turn the notice off.
+Each mod decides whether its skills fortify. A server can instead use the `Fortify`
+setting to fortify every skill, the game's own included, or none.
 
-Fortify Skills Redux does the same job; run one or the other, since both change skills
-on death. Mimir warns in the log when it finds both, unless `Fortify` is `Off`, and
-changes nothing.
+In the skills panel, fortified levels show in blue, such as "22 (18)", with a thin blue
+bar that fills toward the next fortified level. `Show Fortified Levels` hides this. Each
+new fortified level gets its own level-up notice, such as "Run (Fortified)", with blue
+effects. `Fortify Notices` can leave out the effects or turn the notice off.
+
+Fortify Skills Redux does the same job, so use one or the other, not both. Mimir writes a
+warning in the log if it finds both, unless `Fortify` is `Off`.
 
 ## Stat bonuses
 
-A mod can give its skill bonuses to the player's stats: health, stamina, eitr, armor,
-regeneration, food duration, carry weight, reach, movement speeds, the stamina each action
-costs, weapon damage and costs, bow draw and crossbow reload, block power and parrying,
-stealth and noise, fall damage, comfort and rest. Weapon bonuses can be limited to
-one weapon type. The mod decides how much each grows with the level, and can tie one to
-an ability.
+Skills can raise your stats as they level: health, stamina, eitr, armor, regeneration,
+carry weight, speed, stamina costs, weapon damage, blocking, stealth, fall damage, rest
+and more. Some bonuses only apply to one weapon type, and some come with an ability.
 
-They are real stats, not status effects: each value is changed where the game computes it,
-so food, equipment, skills and status effects apply as they do for the base game's values.
-Bonuses from every mod add up. The player's own values are never changed, so removing a
-mod returns the stats to normal.
+These are real stats, not status effects, so food, gear and effects work on top of them as
+usual. Bonuses from different mods add up. Removing a mod puts your stats back to normal.
 
-## Experience events
+## Experience
 
-Mimir reports what the player does, so mods give experience for the same actions the same
-way without each patching the game: attacks, hits and kills for each weapon type and
-school of magic; blocks, parries and dodges; walking, running, sneaking, swimming,
-sailing, riding, jumping and falling; harvesting, foraging, planting, chopping, mining,
-fishing, honey and sap; taming and petting; crafting, upgrading, repairing, cooking,
-refining and fermenting; building; eating; exploring, sleeping and trading.
+Skill mods give experience for things you do: fighting, blocking, moving, gathering,
+taming, crafting, cooking, building, eating, exploring, sleeping, trading and more.
 
-A kill is reported to every player who damaged the creature; its level and other details
-come from Mimir on the game that owned it, so they are missing when that game, another
-player's or a dedicated server's, doesn't run Mimir. Taming likewise needs Mimir on the
-game that owns the creature.
+In multiplayer, every player who damaged a creature gets credit for the kill. For kills
+and taming to count fully, the game that controls the creature (often the server or
+another player's game) also needs Mimir.
 
 ## Notices
 
-Mimir announces each unlock as it happens, whatever raised the skill: experience, the
-console or another mod. The `Unlock Notices` setting decides how:
+You get a notice for each new ability, however the skill went up. The `Unlock Notices`
+setting decides how it shows:
 
 | Setting | Shows |
 |---|---|
-| **Popup** (default) | The game's unlock popup for each ability: the skill's icon, the ability's name, and its description or unlock notice |
-| **Announce** | One ability mid-screen; several at once show "New abilities unlocked" mid-screen and each ability in the corner |
-| **Notify** | Each ability in the corner |
-| **Off** | Nothing |
+| `Popup` (default) | The game's unlock popup, with the skill's icon, the ability's name and what it does |
+| `Announce` | A message mid-screen. Several at once show "New abilities unlocked" and list them in the corner |
+| `Notify` | A message in the corner for each ability |
+| `Off` | Nothing |
 
-The game shows one message mid-screen at a time, so announcements from separate moments
-take turns, four seconds apart; the game queues its popups the same way. UI mods that take
-over the game's notices, such as SeneaL UI, show these in their own style. Loading a
-character announces nothing it already had.
+When several unlocks happen close together, they show one after another. UI mods such as
+SeneaL UI show them in their own style. Loading a character doesn't repeat old unlocks.
 
 ## Skill Abilities page
 
-The compendium gets a Skill Abilities page, after Active Effects and Logs. Each skill with
-perks or abilities shows its level, then its perks: the stat bonuses it gives right now.
-Click "Abilities" to show or hide its list. Unlocked abilities show their name and what
-they do; locked ones show the level they unlock at, and with `Hide Locked Descriptions`
-only their name. With a gamepad every list shows, since links cannot be clicked. Abilities
-a mod has disabled are left out.
+The compendium has a new Skill Abilities page, after Active Effects and Logs. For each
+skill it shows the level, the bonuses the skill gives you right now, and an "Abilities"
+list you can click to open or close. Unlocked abilities show what they do. Locked ones
+show the level they unlock at, and with `Hide Locked Descriptions` on, only their name.
+With a gamepad, every list is open. Abilities a mod has switched off are left out.
 
-With `Show Game Skill Effects`, the game's own skills list what they do at your level
-among their perks, worked out with the game's own formulas: weapon damage range and attack
-costs, draw and reload time, block power, jump force, run speed, stamina costs,
-sneak visibility, mount speed, fishing, craft time and bonus yield, harvest radius and
-build stamina.
+With `Show Game Skill Effects` on, the game's own skills also show what they do at your
+level, such as weapon damage, run speed, stamina costs or craft time.
 
-With Impactful Skills installed and `Absorb Impactful Skills` on, its perks are listed as
-abilities of their skills, with its own unlock levels and descriptions, and its Skill Perks
-page is removed. Perks it turns off, and skills it hides, are left out.
+If you use Impactful Skills, `Absorb Impactful Skills` lists its perks here as abilities
+and removes its own Skill Perks page. Perks and skills it hides stay hidden.
 
-With SeneaL UI, the page shows in its compendium window and the links work there; the
-page keeps its scroll position when a list opens or closes, and it takes its colors from
-the theme SeneaL API shares.
+With SeneaL UI, the page shows in its compendium window and matches its colors.
 
-## Pace and gain modifiers
+## Skill speed
 
-A mod can ease its skill's earliest levels, so the first unlocks take real play while high
-levels cost about what the game asks for its own skills. Only the gain is scaled, so the
-world's skill gain rate still applies. A mod can offer a speed setting for its skill, and
-mods can scale gains of one skill or of every skill, the game's included; all of these
-multiply. Set Mimir's `Verbosity` to `High` and the log prints each scaled gain.
+Some mods make the first few levels of a skill a bit slower, so the first abilities take
+real play. Mods can also offer a speed setting for their skill, or speed up or slow down
+skills in general, the game's own included. These all stack, and the world's skill gain
+rate still applies on top. To check the result, set Mimir's `Verbosity` to `High` and the
+log shows each experience gain.
 
 ## The console
 
-`mimir help` lists the subcommands. Readouts are open to all; changes need devcommands.
+`mimir help` lists the commands. Anyone can look; changing anything needs devcommands.
 
 | Command | Does |
 |---|---|
-| `mimir list` | Every skill Mimir keeps, by console name, with its level |
-| `mimir stats <skill>` | Level, progress, fortified level, each ability (unlocked or not, its level, whether disabled) and each bonus now |
-| `mimir level <skill> <n, +n or -n>` | Sets or changes the level; raising it unlocks what it passes, and nothing is ever locked |
+| `mimir list` | Every Mimir skill, by console name, with its level |
+| `mimir stats <skill>` | Level, fortified level, abilities and bonuses |
+| `mimir level <skill> <n, +n or -n>` | Sets or changes the level. Raising it unlocks abilities; lowering it never locks any |
 | `mimir unlock <skill> <ability or all>` | Unlocks without changing the level |
-| `mimir reset <skill> <ability or all>` | Removes the unlock without changing the level; the next level-up restores it |
-| `mimir fortify <skill or all> <level or reset>` | Sets the fortified level, within `Max Gap` and `Max Fortified Level`, or starts it over, without changing the skill. Takes any skill the character has, by Mimir name, the game's name or the name shown in game |
+| `mimir reset <skill> <ability or all>` | Locks again without changing the level, until the next level-up |
+| `mimir fortify <skill or all> <level or reset>` | Sets the fortified level, or starts it over. Works on any skill, the game's own included |
 
-The game's `resetskill` resets the skill, its fortified level and all of its unlocks.
+The game's own `resetskill` command also clears the skill's unlocks and fortified level.
 
 ## Other mods
 
-Stat bonuses are applied right after the game reads each stat, before other mods' changes,
-so mods that change the same stats, such as Impactful Skills, add on top. VikingsDoSwim
-replaces the game's swimming with its own, and Mimir applies swim speed, swim stamina and
-stamina regen there too.
+Mimir works alongside Impactful Skills: when both change the same stat, the bonuses add
+up. With VikingsDoSwim, bonuses to swim speed, swim stamina and stamina regen still work.

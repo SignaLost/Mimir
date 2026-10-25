@@ -20,7 +20,7 @@ dotnet build -c Release
 The build looks for Valheim in the usual Steam locations, for BepInEx in the game folder
 or a Gale or r2modman `Default` profile, and for Jotunn in that BepInEx's `plugins`. It
 prints what it found, publicizes the game assemblies, and installs the whole package into
-`BepInEx/plugins/NullSignal.Mimir`, the way a mod manager would.
+`BepInEx/plugins/NullSignal-Mimir`, the folder a mod manager uses.
 
 If any of those guesses is wrong, say so once in a `Directory.Build.props` beside the
 `.csproj` (it is in `.gitignore`):
@@ -54,8 +54,8 @@ manifest.json  Mimir.dll  Mimir.pdb  Mimir.xml  icon.png  README.md  CHANGELOG.m
 characters at most), `ManifestWebsite` the repository URL, and the dependency lines in the
 `PackageFiles` target pin the BepInEx pack and Jotunn.
 
-`PluginGuid` names the folder deployed into and the config file; the DLL stays
-`Mimir.dll`. The build fails if `PluginGuid` or `Version` stops matching the constants
+`PluginGuid` names the config file and `PluginFolder` the folder deployed into; the DLL
+stays `Mimir.dll`. The build fails if `PluginGuid` or `Version` stops matching the constants
 in `MimirPlugin.cs`. `Mimir.xml` carries the API's documentation, so mods that reference
 the DLL see it in their editor.
 

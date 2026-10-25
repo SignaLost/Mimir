@@ -112,7 +112,11 @@ internal static class SeneaLSkills
             _setFill.Invoke(rounded, new object[] { FillRadius, FortifiedDisplay.DeepBlue, FortifiedDisplay.Blue });
         }
 
-        GameObject made = new(FortifiedDisplay.NumberName, typeof(RectTransform));
+        // A copy of the progress text keeps its font; a new text would look for TMP's default font, which the game lacks.
+        GameObject made = style
+            ? UnityEngine.Object.Instantiate(style.gameObject, track.parent)
+            : new GameObject(FortifiedDisplay.NumberName, typeof(RectTransform), typeof(TextMeshProUGUI));
+        made.name = FortifiedDisplay.NumberName;
         made.layer = track.gameObject.layer;
         RectTransform rect = (RectTransform)made.transform;
         rect.SetParent(track.parent, false);
@@ -122,15 +126,8 @@ internal static class SeneaLSkills
         rect.anchoredPosition = new Vector2(track.anchoredPosition.x + track.sizeDelta.x, top - BarHeight * 0.5f);
         rect.sizeDelta = new Vector2(NumberWidth, 16f);
 
-        TextMeshProUGUI number = made.AddComponent<TextMeshProUGUI>();
-
-        if (style)
-        {
-            number.font = style.font;
-            number.fontSize = style.fontSize;
-            number.fontStyle = style.fontStyle;
-        }
-
+        TMP_Text number = made.GetComponent<TMP_Text>();
+        number.text = string.Empty;
         number.color = FortifiedDisplay.Blue;
         number.alignment = TextAlignmentOptions.MidlineRight;
         number.textWrappingMode = TextWrappingModes.NoWrap;

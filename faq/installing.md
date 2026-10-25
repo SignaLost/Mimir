@@ -3,40 +3,41 @@
 ## Installing
 
 1. Install the BepInEx pack for Valheim and **Jotunn**.
-2. Install Mimir through a mod manager, or unzip the package into a folder of its own in
-   `BepInEx/plugins`. Mods that need it, such as Valchitecture, list it as a dependency.
+2. Install Mimir with a mod manager. To install by hand, unzip it into a folder of its
+   own inside `BepInEx/plugins`.
 
-On its own Mimir changes nothing in the game unless its `Fortify` setting fortifies every
-skill; the mods that use it add the skills.
+Mods that need Mimir, such as Valchitecture, list it as a dependency, so a mod manager
+installs it for you. On its own Mimir changes nothing in the game, unless its `Fortify`
+setting is set to fortify every skill.
 
-## Configuration
+## Settings
 
-`BepInEx/config/NullSignal.Mimir.cfg`. Synced settings come from the server when it runs
-Mimir; otherwise each player's own value applies.
+The settings are in `BepInEx/config/NullSignal.Mimir.cfg`. Settings marked "Server" come
+from the server when it runs Mimir; otherwise each player's own value is used.
 
-| Section | Setting | Does | Scope |
+| Section | Setting | Does (default) | Set by |
 |---|---|---|---|
-| General | `Unlock Notices` | How unlocks show: `Popup` (default), `Announce`, `Notify` or `Off`; see how notices work | Each player's own |
-| | `Verbosity` | How much Mimir writes to the log: `Low` (default), `Medium` or `High` | Each player's own |
-| Fortify | `Fortify` | Which skills fortify: `ModsChoose` (default), `AllSkills` (the game's too) or `Off` | Synced |
-| | `Rate Per Level` | Share of each gain the fortified level gets per level the skill is above it, 0 to 1 (0.1) | Synced |
-| | `Max Rate` | Largest share it gets, 0 to 1 (0.8) | Synced |
-| | `Active Rate` | Experience multiplier for fortifying skills, 0.1 to 5 (1.5) | Synced |
-| | `Max Gap` | Most levels a fortified level may trail its skill by, 1 to 100 (12) | Synced |
-| | `Max Fortified Level` | Highest level a skill can be fortified to, 1 to 100 (100) | Synced |
-| | `Fortify Notices` | How fortified level-ups show: `Effects` (default, with blue level-up effects), `Notify` (the notice only) or `Off` | Each player's own |
-| | `Show Fortified Levels` | Shows fortified levels and their progress in the skills panel (on) | Each player's own |
-| Compendium | `Skill Abilities Page` | Adds the compendium page (on) | Each player's own |
-| | `Hide Locked Descriptions` | Hides what an ability does until it unlocks (off) | Synced |
-| | `Show Game Skill Effects` | Lists what the game's own skills do at your level as perks on the page (on) | Each player's own |
-| | `Absorb Impactful Skills` | Lists Impactful Skills' perks as abilities on the page and removes its Skill Perks page (on) | Each player's own |
+| General | `Unlock Notices` | How new abilities show: `Popup` (default), `Announce`, `Notify` or `Off` | Player |
+| | `Verbosity` | How much Mimir writes to the log: `Low` (default), `Medium` or `High` | Player |
+| Fortify | `Fortify` | Which skills fortify: `ModsChoose` (default), `AllSkills` (the game's too) or `Off` | Server |
+| | `Rate Per Level` | How much faster the fortified level catches up for each level it is behind (0.1) | Server |
+| | `Max Rate` | The fastest it can catch up (0.8) | Server |
+| | `Active Rate` | Experience boost for skills while they fortify (1.5) | Server |
+| | `Max Gap` | Most levels a fortified level can fall behind (12) | Server |
+| | `Max Fortified Level` | Highest level a skill can be fortified to (100) | Server |
+| | `Fortify Notices` | How fortified level-ups show: `Effects` (default), `Notify` (no effects) or `Off` | Player |
+| | `Show Fortified Levels` | Shows fortified levels in the skills panel (on) | Player |
+| Compendium | `Skill Abilities Page` | Adds the Skill Abilities page (on) | Player |
+| | `Hide Locked Descriptions` | Hides what an ability does until it unlocks (off) | Server |
+| | `Show Game Skill Effects` | Shows what the game's own skills do at your level (on) | Player |
+| | `Absorb Impactful Skills` | Lists Impactful Skills' perks on the page and removes its own page (on) | Player |
 
-The fortify settings are defaults: a mod can set its own for its skills, and those win.
-Only `Fortify` set to `Off` applies to every skill.
+A mod can choose its own fortify settings for its skills, and those take priority. Only
+setting `Fortify` to `Off` applies to every skill.
 
 ## Multiplayer
 
-Skills are kept with each character on that player's own game, so a server does not need
-Mimir. With it, the server also syncs the settings above and sends kill details and taming
-credit for the creatures it owns. Mods that use Mimir may still require themselves on
-every client.
+Your skills are saved with your character on your own computer, so a server doesn't need
+Mimir. If the server has it, it also shares the server settings above and makes kills and
+taming count for creatures the server controls. Some mods that use Mimir may still need
+every player to install them.

@@ -1,14 +1,15 @@
 # How do I translate it?
 
-Mimir's own text, the default unlock notice, the Skill Abilities page, the stat and effect
-names and the console command, is in `Translations/English/mimir.json`. Skill and ability
-names, descriptions and abilities' own unlock notices come from the mods that add them, in
-their own translation files.
+Mimir's own text is in `Translations/English/mimir.json`. That covers the default unlock
+message, the Skill Abilities page, stat names and the console command. Skill and ability
+names and descriptions come from the mods that add them, so you translate those in each
+mod's own files.
 
-1. Make a folder beside `English` named with the game's own word for your language:
+1. Make a folder next to `English`, named with the game's word for your language:
    `German`, `French`, `Spanish`, and so on.
-2. Copy `mimir.json` into it and translate the values.
-3. Launch the game. Jotunn loads the file on its own.
+2. Copy `mimir.json` into it and translate the text.
+3. Launch the game. The file loads on its own.
 
-Keep the keys exactly as they are, and keep any `$1`: it is filled in with a name or a
-number, and can move anywhere in the sentence. A key you leave out shows in English.
+Only translate the text on the right of each line, and leave the names on the left as
+they are. Keep every `$1`: it is replaced by a name or a number, and you can move it
+anywhere in the sentence. Anything you leave out shows in English.

@@ -7,7 +7,8 @@
     <Authors>NullSignal</Authors>
     <!-- The author prefix belongs on the plugin folder and the config file, not the DLL. -->
     <PluginGuid>NullSignal.Mimir</PluginGuid>
-    <Version>1.0.0</Version>
+    <PluginFolder>NullSignal-Mimir</PluginFolder>
+    <Version>1.0.1</Version>
     <Description>Skills for Valheim mods: registration, permanent ability unlocks with notices, stat bonuses, experience events, and one API and console command for every skill.</Description>
     <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>
@@ -117,8 +118,8 @@
 
   <!--
     The plugin attribute needs consts, so the version and GUID are each written twice.
-    The GUID also names the folder deployed into and the config file, so a drift would
-    put the settings somewhere nobody is looking.
+    The GUID also names the config file, so a drift would put the settings somewhere
+    nobody is looking.
   -->
   <Target Name="CheckPluginInfo" BeforeTargets="BeforeBuild">
     <PropertyGroup>
@@ -127,7 +128,7 @@
     <Error Condition="!$(_PluginSource.Contains('PluginVersion = &quot;$(Version)&quot;'))"
            Text="PluginVersion in MimirPlugin.cs is not &quot;$(Version)&quot;. Bump both, or the manifest and the DLL disagree." />
     <Error Condition="!$(_PluginSource.Contains('PluginGuid = &quot;$(PluginGuid)&quot;'))"
-           Text="PluginGuid in MimirPlugin.cs is not &quot;$(PluginGuid)&quot;. Change both, or the mod deploys beside its own config file." />
+           Text="PluginGuid in MimirPlugin.cs is not &quot;$(PluginGuid)&quot;. Change both, or the config file takes the wrong name." />
   </Target>
 
   <!--
@@ -172,7 +173,7 @@
   -->
   <Target Name="Deploy" AfterTargets="PackageFiles">
     <PropertyGroup>
-      <_PluginDir>$(BepInExPath)/plugins/$(PluginGuid)</_PluginDir>
+      <_PluginDir>$(BepInExPath)/plugins/$(PluginFolder)</_PluginDir>
     </PropertyGroup>
 
     <ItemGroup>

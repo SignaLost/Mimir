@@ -149,12 +149,13 @@ internal static class Fortifying
         }
     }
 
-    /// <summary>The level a skill falls back to on death: toward its fortified level, scaled by the world's death penalty.</summary>
+    /// <summary>The level a skill falls back to on death: the game's own penalty, but never below its fortified level.</summary>
     internal static float DeathLevel(Skills skills, Skills.SkillType type, float before)
     {
         Read();
         float fortified = Mathf.Min(before, Record(skills, type, before).Level);
-        return before - (before - fortified) * Mathf.Clamp01(Game.m_skillReductionRate);
+        float loss = Mathf.Clamp01(skills.m_DeathLowerFactor * Game.m_skillReductionRate);
+        return Mathf.Max(fortified, before * (1f - loss));
     }
 
     /// <summary>Sets a skill's fortified level within its limits, with no progress; false when it does not fortify or no character is loaded.</summary>

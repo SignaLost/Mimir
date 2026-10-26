@@ -89,7 +89,10 @@ internal sealed class PageLinks : MonoBehaviour
         }
 
         int index = TMP_TextUtilities.FindIntersectingLink(text, pointer, camera);
-        Log.LogInfo($"Skill Abilities click at {pointer}: link {index}", Log.InfoLevel.High);
+        if (Log.Shows(Log.InfoLevel.High))
+        {
+            Log.LogInfo($"Skill Abilities click at {pointer}: link {index}", Log.InfoLevel.High);
+        }
 
         if (index < 0)
         {

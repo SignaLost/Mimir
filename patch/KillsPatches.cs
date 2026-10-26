@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using HarmonyLib;
 using Mimir.Common;
 using Mimir.Core;
-using UnityEngine;
 
 namespace Mimir.Patch;
 /// <summary>Sends kill details from the owner's game. A prefix, so they leave before the game's own kill messages.</summary>

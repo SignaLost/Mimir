@@ -1,7 +1,5 @@
-using System;
 using System.Reflection;
 using HarmonyLib;
-using Mimir.Common;
 using Mimir.Compatibility;
 
 namespace Mimir.Patch;
@@ -22,13 +20,6 @@ internal static class SeneaL_SkillsView_Tick_Patch
 
     private static void Postfix(object __instance)
     {
-        try
-        {
-            SeneaLSkills.Apply(__instance);
-        }
-        catch (Exception e)
-        {
-            Log.LogWarning($"Fortified levels in SeneaL UI's skills panel failed: {e.Message}");
-        }
+        SeneaLSkills.Apply(__instance);
     }
 }

@@ -23,6 +23,9 @@ internal static class FortifyNotices
     private const float Opacity = 0.5f;
     private const float Pitch = 0.8f;
 
+    private static readonly string[] TintProperties = { "_Color", "_TintColor", "_EmissionColor" };
+    private static readonly MaterialPropertyBlock _block = new();
+
     internal static ConfigEntry<FortifyNotice> Setting;
 
     private static readonly float BlueHue = Hue(FortifiedDisplay.Blue);
@@ -83,9 +86,9 @@ internal static class FortifyNotices
 
                 ParticleSystemRenderer renderer = particles.GetComponent<ParticleSystemRenderer>();
 
-                if (renderer && renderer.material)
+                if (renderer && renderer.sharedMaterial)
                 {
-                    Blue(renderer.material);
+                    Blue(renderer);
                 }
             }
 
@@ -200,16 +203,22 @@ internal static class FortifyNotices
         return color;
     }
 
-    /// <summary>Recolors a particle material's tint; the renderer's own copy, so other effects keep theirs.</summary>
-    private static void Blue(Material material)
+    /// <summary>Recolors a particle renderer's tint through a property block, so the shared material and other effects keep theirs.</summary>
+    private static void Blue(ParticleSystemRenderer renderer)
     {
-        foreach (string property in new[] { "_Color", "_TintColor", "_EmissionColor" })
+        Material material = renderer.sharedMaterial;
+        renderer.GetPropertyBlock(_block);
+
+        foreach (string property in TintProperties)
         {
             if (material.HasProperty(property))
             {
-                material.SetColor(property, Blue(material.GetColor(property)));
+                _block.SetColor(property, Blue(material.GetColor(property)));
             }
         }
+
+        renderer.SetPropertyBlock(_block);
+        _block.Clear();
     }
 
     private static float Hue(Color color)

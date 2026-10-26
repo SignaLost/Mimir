@@ -31,7 +31,7 @@ public sealed class MimirPlugin : BaseUnityPlugin
 {
     public const string PluginName = "Mimir";
     public const string PluginGuid = "NullSignal.Mimir";
-    public const string PluginVersion = "1.0.1";
+    public const string PluginVersion = "1.0.2";
 
     private const string EnglishFile = "mimir.json";
     private const string EnglishResource = "Mimir.Translations.English.json";

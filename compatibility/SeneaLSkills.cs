@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 using TMPro;
@@ -41,44 +42,88 @@ internal static class SeneaLSkills
         return view != null && Resolve(view) ? AccessTools.Method(view, "Tick", new[] { typeof(Player) }) : null;
     }
 
-    /// <summary>Puts the fortified bar and level under each row's progress bar.</summary>
+    /// <summary>What is read and made for one of its rows, kept so the reads happen once rather than every tick.</summary>
+    private sealed class RowParts
+    {
+        internal RectTransform Root;
+        internal RectTransform Track;
+        internal TMP_Text Style;
+        internal Skills.SkillType Type;
+        internal RectTransform Bar;
+        internal RectTransform Fill;
+        internal TMP_Text Number;
+        internal float LastWidth = -1f;
+    }
+
+    private static readonly Dictionary<object, RowParts> _parts = new();
+    private static bool _failed;
+
+    /// <summary>Puts the fortified bar and level under each row's progress bar; after a failure it does nothing more.</summary>
     internal static void Apply(object view)
     {
-        if (_rows == null || !(bool)_applied.GetValue(view) || _rows.GetValue(view) is not IList rows)
+        if (_failed || _rows == null || !(bool)_applied.GetValue(view) || _rows.GetValue(view) is not IList rows)
         {
             return;
         }
 
-        foreach (object row in rows)
+        try
         {
-            if (_root.GetValue(row) is not RectTransform root || !root.gameObject.activeSelf || _skill.GetValue(row) is not Skills.Skill skill
-                || _fill.GetValue(row) is not RectTransform fill || fill.parent is not RectTransform track)
+            foreach (object row in rows)
             {
-                continue;
-            }
+                RowParts parts = PartsOf(row);
 
-            Draw(root, track, _next.GetValue(row) as TMP_Text, skill.m_info.m_skill);
+                if (parts != null && parts.Root.gameObject.activeSelf)
+                {
+                    Draw(parts);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            _failed = true;
+            Log.LogWarning($"Fortified levels in SeneaL UI's skills panel failed and are off until the game restarts: {e.Message}");
         }
     }
 
-    private static void Draw(RectTransform root, RectTransform track, TMP_Text style, Skills.SkillType type)
+    /// <summary>The row's parts, read once; read again when SeneaL UI has rebuilt the row's objects.</summary>
+    private static RowParts PartsOf(object row)
     {
-        bool shows = FortifiedDisplay.Shows(type);
-        RectTransform bar = root.Find(FortifiedDisplay.BarName) as RectTransform;
+        if (_parts.TryGetValue(row, out RowParts parts) && parts.Root && parts.Track)
+        {
+            return parts;
+        }
 
-        if (!bar)
+        if (_root.GetValue(row) is not RectTransform root || _skill.GetValue(row) is not Skills.Skill skill
+            || _fill.GetValue(row) is not RectTransform fill || fill.parent is not RectTransform track)
+        {
+            _parts.Remove(row);
+            return null;
+        }
+
+        parts = new RowParts { Root = root, Track = track, Style = _next.GetValue(row) as TMP_Text, Type = skill.m_info.m_skill };
+        _parts[row] = parts;
+        return parts;
+    }
+
+    private static void Draw(RowParts parts)
+    {
+        bool shows = FortifiedDisplay.Shows(parts.Type);
+
+        if (!parts.Bar)
         {
             if (!shows)
             {
                 return;
             }
 
-            bar = Build(track, style);
+            Build(parts);
         }
 
-        Transform number = root.Find(FortifiedDisplay.NumberName);
-        bar.gameObject.SetActive(shows);
-        number.gameObject.SetActive(shows);
+        if (parts.Bar.gameObject.activeSelf != shows)
+        {
+            parts.Bar.gameObject.SetActive(shows);
+            parts.Number.gameObject.SetActive(shows);
+        }
 
         if (!shows)
         {
@@ -86,17 +131,25 @@ internal static class SeneaLSkills
         }
 
         // SeneaL UI insets the fill one unit inside its track.
-        RectTransform fill = (RectTransform)bar.Find(FillName);
-        fill.sizeDelta = new Vector2((bar.sizeDelta.x - 2f) * Fortifying.NextFraction(type), BarHeight - 2f);
-        FortifiedDisplay.SetNumber(number.GetComponent<TMP_Text>(), type);
+        float width = (parts.Bar.sizeDelta.x - 2f) * Fortifying.NextFraction(parts.Type);
+
+        if (parts.Fill && !Mathf.Approximately(width, parts.LastWidth))
+        {
+            parts.LastWidth = width;
+            parts.Fill.sizeDelta = new Vector2(width, BarHeight - 2f);
+        }
+
+        FortifiedDisplay.SetNumber(parts.Number, parts.Type);
     }
 
     /// <summary>
     ///     Copies the row's progress bar, thinner and with a blue fill, a little below it, and puts the fortified level at
     ///     its right end, right-aligned with the progress text. SeneaL UI anchors its row parts by their top left.
     /// </summary>
-    private static RectTransform Build(RectTransform track, TMP_Text style)
+    private static void Build(RowParts parts)
     {
+        RectTransform track = parts.Track;
+        TMP_Text style = parts.Style;
         float top = track.anchoredPosition.y - track.sizeDelta.y - Gap;
 
         RectTransform bar = (RectTransform)UnityEngine.Object.Instantiate(track.gameObject, track.parent).transform;
@@ -133,7 +186,11 @@ internal static class SeneaLSkills
         number.textWrappingMode = TextWrappingModes.NoWrap;
         number.overflowMode = TextOverflowModes.Overflow;
         number.raycastTarget = false;
-        return bar;
+
+        parts.Bar = bar;
+        parts.Fill = (RectTransform)fill;
+        parts.Number = number;
+        parts.LastWidth = -1f;
     }
 
     private static bool Resolve(Type view)

@@ -12,10 +12,10 @@ public enum Stat
     /// <summary>Eitr without food, in points; flat only.</summary>
     MaxEitr,
 
-    /// <summary>Stamina regained per second.</summary>
+    /// <summary>Base stamina regeneration, before the game's own multipliers.</summary>
     StaminaRegen,
 
-    /// <summary>Eitr regained per second.</summary>
+    /// <summary>Base eitr regeneration, before the game's own multipliers.</summary>
     EitrRegen,
 
     /// <summary>Health food heals every 10 seconds; percent only.</summary>

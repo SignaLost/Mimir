@@ -6,12 +6,16 @@ namespace Mimir;
 /// <summary>The events of one weapon type, raised alongside the general events in <see cref="Events" />.</summary>
 public sealed class WeaponEvents
 {
-    private readonly string _name;
+    private readonly string _attackedName;
+    private readonly string _hitName;
+    private readonly string _killedName;
 
     internal WeaponEvents(Skills.SkillType skill)
     {
         Skill = skill;
-        _name = "Events." + skill;
+        _attackedName = "Events." + skill + ".Attacked";
+        _hitName = "Events." + skill + ".Hit";
+        _killedName = "Events." + skill + ".Killed";
     }
 
     /// <summary>The weapon skill these are for.</summary>
@@ -30,7 +34,7 @@ public sealed class WeaponEvents
     {
         if (Attacked != null)
         {
-            Handlers.Invoke(Attacked, _name + ".Attacked", player, weapon, secondary);
+            Handlers.Invoke(Attacked, _attackedName, player, weapon, secondary);
         }
     }
 
@@ -38,7 +42,7 @@ public sealed class WeaponEvents
     {
         if (Hit != null)
         {
-            Handlers.Invoke(Hit, _name + ".Hit", player, target, hit);
+            Handlers.Invoke(Hit, _hitName, player, target, hit);
         }
     }
 
@@ -46,7 +50,7 @@ public sealed class WeaponEvents
     {
         if (Killed != null)
         {
-            Handlers.Invoke(Killed, _name + ".Killed", player, kill);
+            Handlers.Invoke(Killed, _killedName, player, kill);
         }
     }
 }

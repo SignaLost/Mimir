@@ -56,21 +56,26 @@ public sealed partial class MimirSkill
                 return _level;
             }
 
-            Skills skills = LocalSkills();
-            _level = skills ? skills.GetSkillLevel(Type) : 0f;
+            _level = CurrentLevel();
             _levelFrame = Time.frameCount;
             return _level;
         }
     }
 
     /// <summary><see cref="Level" /> scaled to 0 to 1.</summary>
-    public float Factor
+    public float Factor => Mathf.Clamp01(Level / 100f);
+
+    /// <summary>The level with status effects, as the game computes it, without adding the skill to a character that lacks it.</summary>
+    private float CurrentLevel()
     {
-        get
+        if (!Entry(out Skills.Skill skill))
         {
-            Skills skills = LocalSkills();
-            return skills ? skills.GetSkillFactor(Type) : 0f;
+            return 0f;
         }
+
+        float level = skill.m_level;
+        Player.m_localPlayer.GetSEMan().ModifySkillLevel(Type, ref level);
+        return Mathf.Floor(level);
     }
 
     /// <summary>The level without status effects.</summary>

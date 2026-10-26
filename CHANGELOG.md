@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.2
+
+- Fixed a fortifying skill's first death costing less than the game's own penalty on
+  worlds with a reduced skill loss. A death now takes the game's usual share, but never
+  drops below the fortified level.
+- A skill no longer appears in the skills panel at level 0 before it has earned anything.
+- Fixed a small memory leak from the blue level-up effects.
+- SeneaL UI's skills panel is drawn more cheaply.
+
 ## 1.0.1
 
 - Fixed a warning in the log for every skill row in SeneaL UI's skills panel.

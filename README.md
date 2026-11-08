@@ -55,7 +55,7 @@ Reference Mimir.dll and declare the dependency, so Mimir loads first:
 public class MyPlugin : BaseUnityPlugin { }
 ```
 
-On Thunderstore, list `NullSignal-Mimir-1.0.0` in your manifest's dependencies.
+On Thunderstore, list `NullSignal-Mimir-1.1.1` in your manifest's dependencies.
 
 ### Registering a skill
 
@@ -578,7 +578,7 @@ id, or null), `Weapon`, `WeaponFilter`, `Name`, `Enabled` and `Current`. `Perk` 
 
 | Member | Gives |
 |---|---|
-| `Version`, `Guid` | The API version, and `NullSignal.Mimir` |
+| `Version`, `Guid` | The API version (`2` since 1.1, when `Lock` began to hold until `Unlock`), and `NullSignal.Mimir` |
 | `Register(definition)` | Registers a new skill |
 | `Track(type, key)` | Takes on an existing skill |
 | `Find(name)`, `Find(type)` | A skill by id or console name, or by type |

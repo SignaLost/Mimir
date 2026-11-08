@@ -398,20 +398,21 @@ public sealed partial class MimirSkill
         _locked.Clear();
         _held.Clear();
 
-        // Saved as "unlocked|locked|held"; 1.0 wrote the first two parts.
+        // Saved as "unlocked|locked|held". 1.0 wrote two parts, and its second held the console's resets, which only
+        // lasted until the next level-up, so a record of that shape reads them as held back rather than locked.
         if (!string.IsNullOrEmpty(text))
         {
             string[] parts = text.Split('|');
             Split(parts[0], _unlocked);
 
-            if (parts.Length > 1)
-            {
-                Split(parts[1], _locked);
-            }
-
             if (parts.Length > 2)
             {
+                Split(parts[1], _locked);
                 Split(parts[2], _held);
+            }
+            else if (parts.Length == 2)
+            {
+                Split(parts[1], _held);
             }
         }
 

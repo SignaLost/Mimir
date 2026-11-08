@@ -77,6 +77,21 @@ Only the plugin entry point sits at the root. Namespaces follow folders: `core/`
 | `faq/` | The mod page's FAQ entries, copied into the output folder |
 | `Translations/` | The English text, one key per string; copied into the output folder and built into the DLL as a fallback |
 
+## Versioning
+
+- **0.0.1** fixes and small additions. Nothing in the API changes.
+- **0.1.0** the API gains members or something in it behaves differently. `MimirAPI.Version`
+  goes up by one, so a mod can tell by reflection what is there.
+- **1.0.0** something existing mods would break on.
+
+Saves and settings stay readable across all three. Every change is listed in the
+changelog under its version.
+
+Mods built against Mimir declare the lowest version they were built with, and work with
+every later release of the same major version. Each 0.1.0 or 1.0.0 release of Mimir
+therefore gets a matching release of each dependent, built against it, even when nothing
+in that mod had to change: that is what makes the pairing known to work.
+
 ## Building mods that use it
 
 Build Mimir first. It deploys into the same profile, where mods that reference it, such

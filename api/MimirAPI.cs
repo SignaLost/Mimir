@@ -13,7 +13,8 @@ namespace Mimir;
 /// </summary>
 public static class MimirAPI
 {
-    public const int Version = 1;
+    /// <summary>Rises when members are added or change meaning: 1 for 1.0, 2 for 1.1, in which <see cref="Lock" /> holds until <see cref="Unlock" /> rather than the next level-up.</summary>
+    public const int Version = 2;
 
     public const string Guid = MimirPlugin.PluginGuid;
 

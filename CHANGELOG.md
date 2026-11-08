@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1
+
+- Fixed abilities taken away with the console's `reset` in 1.0 staying locked after
+  updating. They come back at the next level-up, as they did before.
+- The API version is now 2, so mods can tell that `Lock` holds until `Unlock`.
+
 ## 1.1.0
 
 - Mimir now changes only the parts of the game that installed mods actually use. A mod
@@ -9,9 +15,9 @@
   back at the next level-up. The console's `reset` still gives it back at the next
   level-up.
 - Changes made to the settings file while the game runs now apply right away.
-- Works with Auga: fortified levels show on its skills panel, with a blue arc, and in its skill tooltips,
-  which also list the abilities unlocked, and the Skill Abilities page sits on the Hugin
-  tab of its compendium in Auga's colors.
+- Works with Auga: fortified levels show on its skills panel, with a blue ring, and in
+  its skill tooltips, which also list the abilities unlocked, and the Skill Abilities
+  page sits on the Hugin tab of its compendium in Auga's colors.
 
 ## 1.0.2
 

@@ -30,7 +30,7 @@ from the server when it runs Mimir; otherwise each player's own value is used.
 | Compendium | `Skill Abilities Page` | Adds the Skill Abilities page (on) | Player |
 | | `Hide Locked Descriptions` | Hides what an ability does until it unlocks (off) | Server |
 | | `Show Game Skill Effects` | Shows what the game's own skills do at your level (on) | Player |
-| | `Absorb Impactful Skills` | Lists Impactful Skills' perks on the page and removes its own page (on) | Player |
+| | `Merge Skill Pages` | Merges other mods' skill pages, such as Impactful Skills', into this one (on) | Player |
 
 A mod can choose its own fortify settings for its skills, and those take priority. Only
 setting `Fortify` to `Off` applies to every skill.

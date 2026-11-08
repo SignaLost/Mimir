@@ -1,10 +1,12 @@
 using HarmonyLib;
+using Mimir.Common;
 using Mimir.Core;
 using UnityEngine;
 
 namespace Mimir.Patch;
 /// <summary>Counts the map pixels revealed by the game's regular explore.</summary>
 [HarmonyPatch(typeof(Minimap), "Explore", typeof(Vector3), typeof(float))]
+[Serves(Need.Exploring)]
 internal static class Minimap_Explore_Patch
 {
     internal static bool Active;
@@ -31,6 +33,7 @@ internal static class Minimap_Explore_Patch
 }
 
 [HarmonyPatch(typeof(Minimap), "Explore", typeof(int), typeof(int))]
+[Serves(Need.Exploring)]
 internal static class Minimap_ExplorePixel_Patch
 {
     private static void Postfix(bool __result)
@@ -44,6 +47,7 @@ internal static class Minimap_ExplorePixel_Patch
 
 /// <summary>Detects the local player waking after sleeping.</summary>
 [HarmonyPatch(typeof(Player), nameof(Player.SetSleeping))]
+[Serves(Need.Sleeping)]
 internal static class Player_SetSleeping_Patch
 {
     private static void Prefix(Player __instance, bool sleep, out bool __state)
@@ -62,6 +66,7 @@ internal static class Player_SetSleeping_Patch
 
 /// <summary>Detects the local player buying from a trader, by comparing coins before and after.</summary>
 [HarmonyPatch(typeof(StoreGui), "BuySelectedItem")]
+[Serves(Need.Trading)]
 internal static class StoreGui_BuySelectedItem_Patch
 {
     private static void Prefix(StoreGui __instance, out (Trader.TradeItem Item, int Coins) __state)
@@ -89,6 +94,7 @@ internal static class StoreGui_BuySelectedItem_Patch
 
 /// <summary>Detects the local player selling to a trader. The game sells the item GetSellableItem returns.</summary>
 [HarmonyPatch(typeof(StoreGui), "SellItem")]
+[Serves(Need.Trading)]
 internal static class StoreGui_SellItem_Patch
 {
     private static void Prefix(StoreGui __instance, out ItemDrop.ItemData __state)
@@ -109,6 +115,7 @@ internal static class StoreGui_SellItem_Patch
 
 /// <summary>Raises the skill-raised event with the factor after Mimir's gain prefix scaled it, unless another mod blocked the gain.</summary>
 [HarmonyPatch(typeof(Skills), nameof(Skills.RaiseSkill))]
+[Serves(Need.SkillRaises)]
 internal static class Skills_RaiseSkill_Event_Patch
 {
     private static void Postfix(Skills __instance, Skills.SkillType skillType, float factor, bool __runOriginal)
@@ -121,6 +128,7 @@ internal static class Skills_RaiseSkill_Event_Patch
 }
 
 [HarmonyPatch(typeof(Player), nameof(Player.OnSkillLevelup))]
+[Serves(Need.LevelUps)]
 internal static class Player_OnSkillLevelup_Patch
 {
     private static void Postfix(Player __instance, Skills.SkillType skill, float level)

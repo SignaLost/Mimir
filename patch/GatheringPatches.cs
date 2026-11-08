@@ -9,6 +9,7 @@ using UnityEngine;
 namespace Mimir.Patch;
 /// <summary>Detects the local player picking a pickable, once per pickable until its picked state arrives.</summary>
 [HarmonyPatch(typeof(Pickable), nameof(Pickable.Interact))]
+[Serves(Need.Picking)]
 internal static class Pickable_Interact_Patch
 {
     private static void Prefix(Pickable __instance, Humanoid character, out bool __state)
@@ -39,6 +40,7 @@ internal static class Pickable_Interact_Patch
 
 /// <summary>Detects the local player picking up an item, with the stack read before the inventory merges it.</summary>
 [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.Pickup))]
+[Serves(Need.PickingUp)]
 internal static class Humanoid_Pickup_Patch
 {
     private static void Prefix(Humanoid __instance, GameObject go, out (ItemDrop.ItemData Item, int Stack) __state)
@@ -64,6 +66,7 @@ internal static class Humanoid_Pickup_Patch
 
 /// <summary>Detects the local player hitting a tree, rock or other destructible, on the attacker's game before the hit is sent to the owner.</summary>
 [HarmonyPatch]
+[Serves(Need.ObjectHits)]
 internal static class ObjectHit_Patch
 {
     private static IEnumerable<MethodBase> TargetMethods()
@@ -107,6 +110,7 @@ internal static class ObjectHit_Patch
 
 /// <summary>Detects the local player catching a fish.</summary>
 [HarmonyPatch(typeof(FishingFloat), nameof(FishingFloat.Catch))]
+[Serves(Need.Fishing)]
 internal static class FishingFloat_Catch_Patch
 {
     private static void Postfix(Fish fish, Character owner)
@@ -120,6 +124,7 @@ internal static class FishingFloat_Catch_Patch
 
 /// <summary>Detects the local player taking honey from a beehive. Interact returns true either way, so the amount and access are read first.</summary>
 [HarmonyPatch(typeof(Beehive), nameof(Beehive.Interact))]
+[Serves(Need.Honey)]
 internal static class Beehive_Interact_Patch
 {
     private static void Prefix(Beehive __instance, Humanoid character, bool repeat, out int __state)
@@ -139,6 +144,7 @@ internal static class Beehive_Interact_Patch
 }
 
 [HarmonyPatch(typeof(SapCollector), nameof(SapCollector.Interact))]
+[Serves(Need.Sap)]
 internal static class SapCollector_Interact_Patch
 {
     private static void Prefix(SapCollector __instance, Humanoid character, bool repeat, out int __state)

@@ -1,6 +1,4 @@
-using System;
 using System.IO;
-using System.Reflection;
 using System.Text;
 using BepInEx;
 using HarmonyLib;
@@ -15,8 +13,8 @@ namespace Mimir;
 /// <summary>
 ///     The BepInEx entry point of Mimir, a library that gives other mods skills with ability unlocks, stat bonuses
 ///     and experience events. On load it binds the settings, adds the English translations and the <c>mimir</c>
-///     console command, and applies every Harmony patch class on its own. Each frame it drives the unlock checks and
-///     movement tracking in <c>Mimir.Core</c>.
+///     console command, and applies the Harmony patches every game needs; the rest apply as mods ask for events and
+///     stats (<see cref="PatchSets" />). Each frame it drives the unlock checks and movement tracking in <c>Mimir.Core</c>.
 /// </summary>
 [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
 [BepInProcess("valheim.exe")]
@@ -26,27 +24,31 @@ namespace Mimir;
 [BepInDependency(Jotunn.Main.ModGuid)]
 [BepInDependency("seneaL.valheim.ui", BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency("blacks7ar.VikingsDoSwim", BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(Auga.Guid, BepInDependency.DependencyFlags.SoftDependency)]
 [NetworkCompatibility(CompatibilityLevel.NotEnforced, VersionStrictness.None)]
 public sealed class MimirPlugin : BaseUnityPlugin
 {
     public const string PluginName = "Mimir";
     public const string PluginGuid = "NullSignal.Mimir";
-    public const string PluginVersion = "1.0.2";
+    public const string PluginVersion = "1.1.0";
 
     private const string EnglishFile = "mimir.json";
     private const string EnglishResource = "Mimir.Translations.English.json";
 
     private readonly Harmony _harmony = new(PluginGuid);
+    private ConfigWatcher _configWatcher;
 
     private void Awake()
     {
         Log.Init(Logger);
+        Auga.KeepOwnLook(PluginGuid);
 
         Cfg.Bind(Config);
+        _configWatcher = new ConfigWatcher(Config);
 
         RegisterEnglish();
         CommandManager.Instance.AddConsoleCommand(new MimirCommand());
-        ApplyPatches();
+        PatchSets.ApplyCore(_harmony);
 
         Logger.LogInfo($"{PluginName} {PluginVersion} loaded.");
     }
@@ -54,16 +56,20 @@ public sealed class MimirPlugin : BaseUnityPlugin
     private void Start()
     {
         FortifySkillsRedux.Check();
+        Auga.AddTooltipLines();
     }
 
     private void Update()
     {
+        _configWatcher?.Tick();
+        PatchSets.Flush();
         Unlocks.Update();
         Movement.Update();
     }
 
     private void OnDestroy()
     {
+        _configWatcher?.Dispose();
         _harmony?.UnpatchSelf();
     }
 
@@ -85,30 +91,4 @@ public sealed class MimirPlugin : BaseUnityPlugin
         }
     }
 
-    /// <summary>Applies each patch class separately; a failed class is logged and the rest still apply.</summary>
-    private void ApplyPatches()
-    {
-        int applied = 0;
-        int failed = 0;
-
-        foreach (Type type in AccessTools.GetTypesFromAssembly(Assembly.GetExecutingAssembly()))
-        {
-            try
-            {
-                PatchClassProcessor processor = _harmony.CreateClassProcessor(type);
-
-                if (processor.Patch() is { Count: > 0 })
-                {
-                    applied++;
-                }
-            }
-            catch (Exception e)
-            {
-                failed++;
-                Logger.LogError($"Patch failed: {type.Name} - {e.Message}");
-            }
-        }
-
-        Logger.LogInfo($"Applied {applied} patch classes" + (failed > 0 ? $", {failed} failed." : "."));
-    }
 }

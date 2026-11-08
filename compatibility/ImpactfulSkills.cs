@@ -2,16 +2,16 @@ using System;
 using System.Collections;
 using System.Reflection;
 using BepInEx.Bootstrap;
-using BepInEx.Configuration;
 using HarmonyLib;
 using Jotunn.Managers;
 using Mimir.Common;
+using Mimir.Modules;
 
 namespace Mimir.Compatibility;
 
 /// <summary>
 ///     Lists Impactful Skills' perks as abilities on Mimir's Skill Abilities page and removes its own Skill Perks page,
-///     when <c>Absorb Impactful Skills</c> is on. The perks are read from its <c>SkillPerks.BySkill</c> table, which
+///     when <c>Merge Skill Pages</c> is on. The perks are read from its <c>SkillPerks.BySkill</c> table, which
 ///     already holds each perk's toggle, unlock level and check, so they show and unlock exactly as on its own page.
 ///     If that table changes shape, Mimir warns once and leaves its page alone.
 /// </summary>
@@ -20,8 +20,6 @@ internal static class ImpactfulSkills
     internal const string Guid = "MidnightsFX.ImpactfulSkills";
 
     private const string PageToken = "$compendium_skill_perks";
-
-    internal static ConfigEntry<bool> Absorb;
 
     private static bool _resolved;
     private static PropertyInfo _bySkill;
@@ -32,7 +30,7 @@ internal static class ImpactfulSkills
     private static FieldInfo _reached;
 
     /// <summary>Whether its perks are listed by Mimir.</summary>
-    internal static bool Active => Absorb != null && Absorb.Value && Resolve();
+    internal static bool Active => AbilityPage.Merge != null && AbilityPage.Merge.Value && Resolve();
 
     /// <summary>Its perk table, keyed by skill type; null when it is not in use.</summary>
     internal static IDictionary Table => Active ? _bySkill.GetValue(null) as IDictionary : null;

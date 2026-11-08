@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using HarmonyLib;
+using Mimir.Common;
 using Mimir.Core;
 
 namespace Mimir.Patch;
 /// <summary>Detects the local player crafting or upgrading an item, caught as the game adds it under the recipe's name.</summary>
 [HarmonyPatch(typeof(InventoryGui), "DoCrafting")]
+[Serves(Need.Crafting)]
 internal static class InventoryGui_DoCrafting_Patch
 {
     internal static Recipe Recipe;
@@ -47,6 +49,7 @@ internal static class InventoryGui_DoCrafting_Patch
 
 [HarmonyPatch(typeof(Inventory), nameof(Inventory.AddItem), typeof(string), typeof(int), typeof(int), typeof(int), typeof(long), typeof(string),
     typeof(Vector2i), typeof(bool), typeof(bool), typeof(bool))]
+[Serves(Need.Crafting)]
 internal static class Inventory_AddItem_Crafted_Patch
 {
     private static void Postfix(ItemDrop.ItemData __result, string name, int stack)
@@ -66,6 +69,7 @@ internal static class Inventory_AddItem_Crafted_Patch
 
 /// <summary>Detects the local player repairing a worn item, by comparing durability before and after.</summary>
 [HarmonyPatch(typeof(InventoryGui), "RepairOneItem")]
+[Serves(Need.ItemRepairs)]
 internal static class InventoryGui_RepairOneItem_Patch
 {
     private static readonly List<ItemDrop.ItemData> _worn = new();
@@ -107,6 +111,7 @@ internal static class InventoryGui_RepairOneItem_Patch
 
 /// <summary>Detects the local player taking food off a cooking station. The game removes the first done slot.</summary>
 [HarmonyPatch(typeof(CookingStation), "OnInteract")]
+[Serves(Need.Cooking)]
 internal static class CookingStation_OnInteract_Patch
 {
     private static void Prefix(CookingStation __instance, out string __state)
@@ -142,6 +147,7 @@ internal static class CookingStation_OnInteract_Patch
 
 /// <summary>Detects the local player adding an item to a smelter. Given no item, the game picks one from the inventory with FindCookableItem.</summary>
 [HarmonyPatch(typeof(Smelter), "OnAddOre")]
+[Serves(Need.Refining)]
 internal static class Smelter_OnAddOre_Patch
 {
     private static void Prefix(Smelter __instance, Humanoid user, ItemDrop.ItemData item, out ItemDrop.ItemData __state)
@@ -159,6 +165,7 @@ internal static class Smelter_OnAddOre_Patch
 }
 
 [HarmonyPatch(typeof(Smelter), "OnAddFuel")]
+[Serves(Need.Refining)]
 internal static class Smelter_OnAddFuel_Patch
 {
     private static void Postfix(Smelter __instance, Humanoid user, bool __result)
@@ -172,6 +179,7 @@ internal static class Smelter_OnAddFuel_Patch
 
 /// <summary>Detects the local player adding an item to a fermenter.</summary>
 [HarmonyPatch(typeof(Fermenter), "AddItem")]
+[Serves(Need.Fermenting)]
 internal static class Fermenter_AddItem_Patch
 {
     private static void Postfix(Fermenter __instance, Humanoid user, ItemDrop.ItemData item, bool __result)
@@ -185,6 +193,7 @@ internal static class Fermenter_AddItem_Patch
 
 /// <summary>Detects the local player tapping a ready fermenter.</summary>
 [HarmonyPatch(typeof(Fermenter), nameof(Fermenter.Interact))]
+[Serves(Need.Fermenting)]
 internal static class Fermenter_Interact_Patch
 {
     private static void Prefix(Fermenter __instance, Humanoid user, bool hold, out bool __state)
@@ -204,6 +213,7 @@ internal static class Fermenter_Interact_Patch
 }
 
 [HarmonyPatch(typeof(Player), nameof(Player.ConsumeItem))]
+[Serves(Need.Eating)]
 internal static class Player_ConsumeItem_Patch
 {
     private static void Postfix(Player __instance, ItemDrop.ItemData item, bool __result)

@@ -41,6 +41,7 @@ public sealed partial class MimirSkill
         Bonus bonus = new(this, stat, type, amountAtLevel, AbilityId(requires));
         _bonuses.Add(bonus);
         StatTotals.Add(bonus);
+        PatchSets.Want(stat);
         return bonus;
     }
 

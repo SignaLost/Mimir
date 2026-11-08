@@ -44,8 +44,7 @@ translate it.
 
 Everything goes through `MimirAPI`, a public static class in Mimir.dll, and the
 `MimirSkill` it hands back. It works for the local player, must be called from the main
-thread, and reads 0 while no character is loaded. `MimirAPI.Version` rises when members
-are added; existing members keep their meaning.
+thread, and reads 0 while no character is loaded.
 
 ### Depending on Mimir
 
@@ -144,7 +143,7 @@ Every part of an ability is open to mods, including another mod's abilities:
 | Add | `AddAbility(id, name, level, unlockText, description)` | Until removed or the game closes |
 | Remove | `RemoveAbility(id)` | Until added again |
 | Unlock | `Unlock(id)` | Saved with the character |
-| Lock | `Lock(id)` | Saved, until the next level-up |
+| Lock | `Lock(id)` | Saved, until unlocked again |
 | Disable | `Disable(id, source)` | Until every source enables it, or the game closes |
 | Enable | `Enable(id, source)` | |
 
@@ -173,8 +172,8 @@ characters who had theirs keep the unlock; under a new id, yours is earned afres
 
 **Unlock** grants an ability as reaching its level would, with its notice and event.
 **Lock** removes the unlock but leaves the level alone. The ability stays locked, across
-relogs, until the character's next level-up, which unlocks again whatever their level
-covers. To keep one off, disable it, or remove it.
+relogs and level-ups, until something unlocks it again: `Unlock`, or the console. For
+an ability that should merely pause, disable it instead.
 
 ### Settings for your skill
 
@@ -343,7 +342,9 @@ Events.Killed += (player, kill) => Hunting.Raise(player, kill.Detailed ? kill.Le
 Every handler gets the player first. Each event fires once per action, as the game carries
 it out, on the local player's game; a failed action raises nothing: a block that breaks, a
 failed upgrade, a dodge without stamina, a piece another mod stopped from being placed. A
-handler that throws is logged and the rest still run.
+handler that throws is logged and the rest still run. Mimir patches the game code behind an
+event the first time a mod subscribes to it, so the events nobody listens for cost nothing
+and clash with nothing; the same goes for the stats bonuses are added to.
 
 **One weapon type.** `Events.Swords`, `Knives`, `Clubs`, `Polearms`, `Spears`, `Axes`,
 `Bows`, `Crossbows`, `Unarmed`, `Pickaxes`, `ElementalMagic` and `BloodMagic` each have:

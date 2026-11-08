@@ -195,7 +195,7 @@ internal sealed class MimirCommand : ConsoleCommand
         }
     }
 
-    /// <summary>Removes an ability's unlock, or every one, leaving the level as it is.</summary>
+    /// <summary>Removes an ability's unlock, or every one, until the next level-up, leaving the level as it is.</summary>
     private static void Reset(Terminal context, MimirSkill skill, string value)
     {
         if (!Pick(context, skill, value, out List<Ability> abilities))
@@ -205,7 +205,7 @@ internal sealed class MimirCommand : ConsoleCommand
 
         foreach (Ability ability in abilities)
         {
-            skill.Lock(ability.Id);
+            skill.Revoke(ability, untilLevelUp: true);
         }
 
         ShowStats(context, skill);

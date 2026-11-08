@@ -33,6 +33,7 @@ internal static class AbilityPage
 
     internal static ConfigEntry<bool> Show;
     internal static ConfigEntry<bool> HideLocked;
+    internal static ConfigEntry<bool> Merge;
 
     private static readonly HashSet<int> Expanded = new();
     private static readonly HashSet<Skills.SkillType> Types = new();
@@ -44,10 +45,24 @@ internal static class AbilityPage
     private static readonly Action<string, string, float, bool> AddImpactful =
         (name, description, level, unlocked) => Shown.Add(new Entry(Names.Localize(name), Names.Localize(description), level, unlocked, Shown.Count));
 
-    private static TextsDialog _dialog;
-    private static TextsDialog.TextInfo _page;
+    // The page in each compendium dialog it was added to; interface mods have more than one.
+    private static readonly Dictionary<TextsDialog, TextsDialog.TextInfo> _pages = new();
 
-    internal static bool Showing => _page != null && _page.m_selected && _page.m_selected.activeSelf;
+    internal static bool Showing => ShowingIn() != null;
+
+    /// <summary>The dialog whose copy of the page is on screen, or null.</summary>
+    private static TextsDialog ShowingIn()
+    {
+        foreach (KeyValuePair<TextsDialog, TextsDialog.TextInfo> entry in _pages)
+        {
+            if (entry.Key && entry.Key.isActiveAndEnabled && entry.Value.m_selected && entry.Value.m_selected.activeSelf)
+            {
+                return entry.Key;
+            }
+        }
+
+        return null;
+    }
 
     /// <summary>An ability as listed: localized name and description, unlock level and whether it is unlocked.</summary>
     private readonly struct Entry
@@ -71,14 +86,22 @@ internal static class AbilityPage
     /// <summary>Adds the page to the dialog's list when any skill has something to show.</summary>
     internal static void Add(TextsDialog dialog)
     {
-        _page = null;
+        _pages.Remove(dialog);
 
         if (!Show.Value || !Player.m_localPlayer)
         {
             return;
         }
 
+        // Merged pages leave every dialog, including tabs this page itself stays off.
         ImpactfulSkills.RemovePage(dialog);
+
+        // Auga's compendium has a tab for lore alone, where the page does not belong.
+        if (Auga.IsLoreTab(dialog))
+        {
+            return;
+        }
+
         string text = Build();
 
         if (text.Length == 0)
@@ -86,16 +109,18 @@ internal static class AbilityPage
             return;
         }
 
-        _dialog = dialog;
-        _page = new TextsDialog.TextInfo(Names.Localize(Tokens.PageTitle), text);
-        dialog.m_texts.Insert(Mathf.Min(PageIndex, dialog.m_texts.Count), _page);
+        TextsDialog.TextInfo page = new(Names.Localize(Tokens.PageTitle), text);
+        _pages[dialog] = page;
+        dialog.m_texts.Insert(Mathf.Min(PageIndex, dialog.m_texts.Count), page);
         PageLinks.Attach(dialog.m_textArea);
     }
 
     /// <summary>Expands or collapses a skill's abilities and redraws the page; returns the new page, or null when it is not showing.</summary>
     internal static string Toggle(string skill)
     {
-        if (!Showing || !int.TryParse(skill, NumberStyles.Integer, CultureInfo.InvariantCulture, out int type))
+        TextsDialog dialog = ShowingIn();
+
+        if (dialog == null || !int.TryParse(skill, NumberStyles.Integer, CultureInfo.InvariantCulture, out int type))
         {
             return null;
         }
@@ -105,19 +130,21 @@ internal static class AbilityPage
             Expanded.Add(type);
         }
 
-        _page.m_text = Build();
-        _dialog.m_textArea.text = _page.m_text;
-        return _page.m_text;
+        TextsDialog.TextInfo page = _pages[dialog];
+        page.m_text = Build();
+        dialog.m_textArea.text = page.m_text;
+        return page.m_text;
     }
 
     private static string Build()
     {
-        _skillColor = SeneaLTheme.Hex(SeneaLTheme.Accent, "orange");
-        _headerColor = SeneaLTheme.Hex(SeneaLTheme.Accent, "#E8B04A");
-        _perkColor = SeneaLTheme.Hex(SeneaLTheme.Good, "#9ACD5A");
-        _unlockedColor = SeneaLTheme.Hex(SeneaLTheme.Accent, "yellow");
-        _lockedColor = SeneaLTheme.Hex(SeneaLTheme.Bad, "#E06A5A");
-        _mutedColor = SeneaLTheme.Hex(SeneaLTheme.Muted, "#8C8C8C");
+        // SeneaL UI's theme first, then Auga's palette, then the page's own colors.
+        _skillColor = SeneaLTheme.Hex(SeneaLTheme.Accent, Auga.Color("BrightGold", "orange"));
+        _headerColor = SeneaLTheme.Hex(SeneaLTheme.Accent, Auga.Color("Gold", "#E8B04A"));
+        _perkColor = SeneaLTheme.Hex(SeneaLTheme.Good, Auga.Color("Green", "#9ACD5A"));
+        _unlockedColor = SeneaLTheme.Hex(SeneaLTheme.Accent, Auga.Color("BrightestGold", "yellow"));
+        _lockedColor = SeneaLTheme.Hex(SeneaLTheme.Bad, Auga.Color("RedText", "#E06A5A"));
+        _mutedColor = SeneaLTheme.Hex(SeneaLTheme.Muted, Auga.Color("Brown3", "#8C8C8C"));
         Text.Clear();
 
         Skills skills = Player.m_localPlayer.GetSkills();

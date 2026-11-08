@@ -104,7 +104,7 @@ internal static class Unlocks
             {
                 if (seen && now > before)
                 {
-                    skill.LiftLocks();
+                    skill.LiftHolds();
 
                     if (Mathf.FloorToInt(now) > Mathf.FloorToInt(before))
                     {

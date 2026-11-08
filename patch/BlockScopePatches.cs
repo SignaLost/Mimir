@@ -1,10 +1,13 @@
 using System;
 using HarmonyLib;
+using Mimir.Common;
 using Mimir.Core;
 
 namespace Mimir.Patch;
 /// <summary>Tracks whether the local player's BlockAttack is running, restoring the outer state after a nested block.</summary>
 [HarmonyPatch(typeof(Humanoid), "BlockAttack")]
+[Serves(Need.Blocking)]
+[ServesStat(Stat.ParryBonus)]
 internal static class BlockScope
 {
     internal static bool Local { get; private set; }

@@ -44,6 +44,19 @@ internal static class FortifiedDisplay
         }
     }
 
+    /// <summary>Puts the fortified level in blue brackets after a level text another interface wrote, once.</summary>
+    internal static void AppendNumber(TMP_Text level, Skills.SkillType type)
+    {
+        string text = level.text;
+
+        if (string.IsNullOrEmpty(text) || text.Contains(BlueTag))
+        {
+            return;
+        }
+
+        level.text = text + " <color=" + BlueTag + ">(" + (Numbers[Fortified(type)] ??= Fortified(type).ToString()) + ")</color>";
+    }
+
     /// <summary>Adds the fortified level and bar to each row of the game's skills panel.</summary>
     internal static void ApplyVanilla(SkillsDialog dialog, Player player)
     {

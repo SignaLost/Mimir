@@ -1,10 +1,12 @@
 using HarmonyLib;
+using Mimir.Common;
 using Mimir.Core;
 using UnityEngine;
 
 namespace Mimir.Patch;
 /// <summary>Detects a jump the local player made. Only Jump leads to OnJump through this path; launches call OnJump directly.</summary>
 [HarmonyPatch(typeof(Character), nameof(Character.Jump))]
+[Serves(Need.Jumping)]
 internal static class Character_Jump_Patch
 {
     internal static bool Jumping;
@@ -21,6 +23,7 @@ internal static class Character_Jump_Patch
 }
 
 [HarmonyPatch(typeof(Player), "OnJump")]
+[Serves(Need.Jumping)]
 internal static class Player_OnJump_Patch
 {
     private static void Postfix(Player __instance)
@@ -35,6 +38,7 @@ internal static class Player_OnJump_Patch
 
 /// <summary>Detects the local player landing from over 4 m, with the height read before landing resets it.</summary>
 [HarmonyPatch(typeof(Character), "UpdateGroundContact")]
+[Serves(Need.Falling)]
 internal static class Character_UpdateGroundContact_Patch
 {
     private const float HurtHeight = 4f;

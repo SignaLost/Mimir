@@ -71,7 +71,7 @@ Only the plugin entry point sits at the root. Namespaces follow folders: `core/`
 | `common/` | Settings, logging, localization, embedded resources, safe event invocation |
 | `core/` | The skill registry, gain modifiers, unlocks, bonus totals, kill and taming messages, movement tracking, and the `mimir` console command |
 | `modules/` | Fortifying and its notices and display, unlock notices, the Skill Abilities page and the game's skill effects |
-| `compatibility/` | SeneaL UI, SeneaL API, Impactful Skills and VikingsDoSwim support, and the Fortify Skills Redux warning |
+| `compatibility/` | SeneaL UI, SeneaL API, Auga, Impactful Skills and VikingsDoSwim support, and the Fortify Skills Redux warning |
 | `patch/` | Every Harmony patch |
 | `Thunderstore/` | The package icon, copied into the output folder |
 | `faq/` | The mod page's FAQ entries, copied into the output folder |

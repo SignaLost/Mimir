@@ -1,9 +1,11 @@
 using HarmonyLib;
+using Mimir.Common;
 using Mimir.Core;
 
 namespace Mimir.Patch;
 /// <summary>Detects the local player placing a piece with a build tool. The game calls SetCreator on the placed copy, which is caught there.</summary>
 [HarmonyPatch(typeof(Player), nameof(Player.TryPlacePiece))]
+[Serves(Need.Placing)]
 internal static class Player_TryPlacePiece_Patch
 {
     internal static bool Active;
@@ -29,6 +31,7 @@ internal static class Player_TryPlacePiece_Patch
 }
 
 [HarmonyPatch(typeof(Piece), nameof(Piece.SetCreator))]
+[Serves(Need.Placing)]
 internal static class Piece_SetCreator_Patch
 {
     private static void Postfix(Piece __instance)
@@ -42,6 +45,7 @@ internal static class Piece_SetCreator_Patch
 
 /// <summary>Detects the local player removing a piece. CanBeRemoved is the last check before removal, so the piece passing it is the one removed.</summary>
 [HarmonyPatch(typeof(Player), "RemovePiece")]
+[Serves(Need.Removing)]
 internal static class Player_RemovePiece_Patch
 {
     internal static bool Active;
@@ -67,6 +71,7 @@ internal static class Player_RemovePiece_Patch
 }
 
 [HarmonyPatch(typeof(Piece), nameof(Piece.CanBeRemoved))]
+[Serves(Need.Removing)]
 internal static class Piece_CanBeRemoved_Patch
 {
     private static void Postfix(Piece __instance, bool __result)
@@ -80,6 +85,7 @@ internal static class Piece_CanBeRemoved_Patch
 
 /// <summary>Detects a damaged piece being repaired.</summary>
 [HarmonyPatch(typeof(WearNTear), nameof(WearNTear.Repair))]
+[Serves(Need.PieceRepairs)]
 internal static class WearNTear_Repair_Patch
 {
     private static void Postfix(WearNTear __instance, bool __result)

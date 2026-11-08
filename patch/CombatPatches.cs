@@ -5,6 +5,7 @@ using Mimir.Core;
 namespace Mimir.Patch;
 /// <summary>Detects the local player starting an attack that passed the game's checks.</summary>
 [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.StartAttack))]
+[Serves(Need.Attacks)]
 internal static class Humanoid_StartAttack_Patch
 {
     private static void Postfix(Humanoid __instance, bool secondaryAttack, bool __result)
@@ -18,6 +19,7 @@ internal static class Humanoid_StartAttack_Patch
 
 /// <summary>Detects the local player damaging a creature, on the attacker's game before the hit is sent to the target's owner.</summary>
 [HarmonyPatch(typeof(Character), nameof(Character.Damage))]
+[Serves(Need.Hits)]
 internal static class Character_Damage_Patch
 {
     private static void Postfix(Character __instance, HitData hit)
@@ -31,6 +33,7 @@ internal static class Character_Damage_Patch
 
 /// <summary>Detects the local player losing health to damage, by comparing health before and after.</summary>
 [HarmonyPatch(typeof(Character), nameof(Character.ApplyDamage))]
+[Serves(Need.Hurt)]
 internal static class Character_ApplyDamage_Patch
 {
     private static void Prefix(Character __instance, out float __state)
@@ -59,6 +62,7 @@ internal static class Character_ApplyDamage_Patch
 ///     so a block counts only when the game reduced the hit with BlockDamage.
 /// </summary>
 [HarmonyPatch(typeof(Humanoid), "BlockAttack")]
+[Serves(Need.Blocking)]
 internal static class Humanoid_BlockAttack_Patch
 {
     internal static bool Reduced;
@@ -84,6 +88,7 @@ internal static class Humanoid_BlockAttack_Patch
 }
 
 [HarmonyPatch(typeof(HitData), nameof(HitData.BlockDamage))]
+[Serves(Need.Blocking)]
 internal static class HitData_BlockDamage_Patch
 {
     private static void Postfix()
@@ -97,6 +102,7 @@ internal static class HitData_BlockDamage_Patch
 
 /// <summary>Detects the local player starting a dodge. A dodge that starts sets the queue timer to exactly 0.</summary>
 [HarmonyPatch(typeof(Player), "UpdateDodge")]
+[Serves(Need.Dodging)]
 internal static class Player_UpdateDodge_Patch
 {
     private static void Prefix(Player __instance, float dt, out bool __state)
@@ -115,6 +121,7 @@ internal static class Player_UpdateDodge_Patch
 
 /// <summary>Detects an attack passing through the local player while dodging, once per dodge.</summary>
 [HarmonyPatch(typeof(Player), "RPC_HitWhileDodging")]
+[Serves(Need.Dodging)]
 internal static class Player_RPC_HitWhileDodging_Patch
 {
     private static void Prefix(Player __instance, out bool __state)

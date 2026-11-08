@@ -1,4 +1,5 @@
 using HarmonyLib;
+using Mimir.Common;
 using Mimir.Core;
 using UnityEngine;
 
@@ -24,6 +25,7 @@ internal static class Tameable_Tame_Patch
 
 /// <summary>Detects the local player petting or commanding a tamed creature. Only a successful pet or command stamps m_lastPetTime.</summary>
 [HarmonyPatch(typeof(Tameable), nameof(Tameable.Interact))]
+[Serves(Need.Animals)]
 internal static class Tameable_Interact_Patch
 {
     private static void Prefix(Tameable __instance, out float __state)

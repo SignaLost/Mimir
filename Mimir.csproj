@@ -8,7 +8,7 @@
     <!-- The author prefix belongs on the plugin folder and the config file, not the DLL. -->
     <PluginGuid>NullSignal.Mimir</PluginGuid>
     <PluginFolder>NullSignal-Mimir</PluginFolder>
-    <Version>1.0.2</Version>
+    <Version>1.1.0</Version>
     <Description>Skills for Valheim mods: registration, permanent ability unlocks with notices, stat bonuses, experience events, and one API and console command for every skill.</Description>
     <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>
@@ -186,5 +186,8 @@
     <Message Condition="Exists('$(BepInExPath)/plugins')" Importance="high" Text="Deployed to $(_PluginDir)" />
     <Warning Condition="!Exists('$(BepInExPath)/plugins')" Text="Built but not deployed: no plugins folder under '$(BepInExPath)'. The package is in $(OutputPath)." />
   </Target>
+
+  <!-- Trims the XML docs to the API; see the file for how. -->
+  <Import Project="ApiDocs.targets" />
 
 </Project>

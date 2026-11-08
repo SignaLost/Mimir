@@ -17,7 +17,8 @@ If a server lowers an ability's level below yours, or a mod update adds a new on
 already qualify for, it unlocks right away. When you first load a character with a new
 skill mod, abilities your level already covers unlock quietly, without notices.
 
-An ability locked by a mod or the console stays locked until your next level-up.
+An ability a mod locks stays locked until something unlocks it again. The console's
+`reset` only takes the unlock away until your next level-up, so you can see it unlock again.
 
 A mod can also switch an ability off for a while, for example during a boss fight. You
 keep the unlock, but the ability does nothing until the mod turns it back on or you
@@ -40,7 +41,10 @@ Each mod decides whether its skills fortify. A server can instead use the `Forti
 setting to fortify every skill, the game's own included, or none.
 
 In the skills panel, fortified levels show in blue, such as "22 (18)", with a thin blue
-bar that fills toward the next fortified level. `Show Fortified Levels` hides this. Each
+bar that fills toward the next fortified level; in Auga's panel a blue arc between its
+white and yellow ones fills toward the next fortified level, and its skill tooltips list the fortified level and the
+abilities unlocked. `Show Fortified
+Levels` hides this. Each
 new fortified level gets its own level-up notice, such as "Run (Fortified)", with blue
 effects. `Fortify Notices` can leave out the effects or turn the notice off.
 
@@ -91,10 +95,11 @@ With a gamepad, every list is open. Abilities a mod has switched off are left ou
 With `Show Game Skill Effects` on, the game's own skills also show what they do at your
 level, such as weapon damage, run speed, stamina costs or craft time.
 
-If you use Impactful Skills, `Absorb Impactful Skills` lists its perks here as abilities
-and removes its own Skill Perks page. Perks and skills it hides stay hidden.
+`Merge Skill Pages` merges other mods' skill pages into this one. With Impactful Skills,
+its perks show here as abilities and its own Skill Perks page is removed. Perks and skills it hides stay hidden.
 
-With SeneaL UI, the page shows in its compendium window and matches its colors.
+With SeneaL UI, the page shows in its compendium window and matches its colors. With
+Auga, it sits on the Hugin tab of its compendium, in Auga's colors.
 
 ## Skill speed
 
@@ -114,7 +119,7 @@ log shows each experience gain.
 | `mimir stats <skill>` | Level, fortified level, abilities and bonuses |
 | `mimir level <skill> <n, +n or -n>` | Sets or changes the level. Raising it unlocks abilities; lowering it never locks any |
 | `mimir unlock <skill> <ability or all>` | Unlocks without changing the level |
-| `mimir reset <skill> <ability or all>` | Locks again without changing the level, until the next level-up |
+| `mimir reset <skill> <ability or all>` | Takes the unlock away without changing the level, until the next level-up |
 | `mimir fortify <skill or all> <level or reset>` | Sets the fortified level, or starts it over. Works on any skill, the game's own included |
 
 The game's own `resetskill` command also clears the skill's unlocks and fortified level.

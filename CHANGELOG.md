@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.1.0
+
+- Mimir now changes only the parts of the game that installed mods actually use. A mod
+  that only unlocks abilities leaves combat, movement, crafting and the rest untouched,
+  so there is less to clash with other mods and less to break when the game updates.
+- An ability a mod locks now stays locked until it is unlocked again, instead of coming
+  back at the next level-up. The console's `reset` still gives it back at the next
+  level-up.
+- Changes made to the settings file while the game runs now apply right away.
+- Works with Auga: fortified levels show on its skills panel, with a blue arc, and in its skill tooltips,
+  which also list the abilities unlocked, and the Skill Abilities page sits on the Hugin
+  tab of its compendium in Auga's colors.
+
 ## 1.0.2
 
 - Fixed a fortifying skill's first death costing less than the game's own penalty on
@@ -8,6 +21,8 @@
 - A skill no longer appears in the skills panel at level 0 before it has earned anything.
 - Fixed a small memory leak from the blue level-up effects.
 - SeneaL UI's skills panel is drawn more cheaply.
+- `Absorb Impactful Skills` is now `Merge Skill Pages`, ready for other mods' skill pages
+  too. Your setting carries over.
 
 ## 1.0.1
 

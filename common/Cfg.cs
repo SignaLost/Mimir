@@ -1,6 +1,8 @@
+using System.Collections.Generic;
+using System.Reflection;
 using BepInEx.Configuration;
+using HarmonyLib;
 using Mimir.Modules;
-using Mimir.Compatibility;
 using Mimir.Core;
 
 namespace Mimir.Common;
@@ -41,8 +43,34 @@ internal static class Cfg
             Synced("Hides what an ability does until it unlocks."));
         SkillEffects.Show = config.Bind(SecCompendium, "Show Game Skill Effects", true,
             Unsynced("Lists what the game's own skills do at your level as perks on the Skill Abilities page."));
-        ImpactfulSkills.Absorb = config.Bind(SecCompendium, "Absorb Impactful Skills", true,
-            Unsynced("Lists Impactful Skills' perks as abilities on the Skill Abilities page and removes its Skill Perks page."));
+        Rename(config, SecCompendium, "Absorb Impactful Skills", "Merge Skill Pages");
+        AbilityPage.Merge = config.Bind(SecCompendium, "Merge Skill Pages", true,
+            Unsynced("Merges other mods' skill pages into the Skill Abilities page."));
+    }
+
+    /// <summary>Carries a value saved under a setting's old name over to its new one, before the new one is bound.</summary>
+    private static void Rename(ConfigFile config, string section, string from, string to)
+    {
+        PropertyInfo property = AccessTools.Property(typeof(ConfigFile), "OrphanedEntries");
+
+        if (property?.GetValue(config) is not Dictionary<ConfigDefinition, string> saved)
+        {
+            return;
+        }
+
+        ConfigDefinition old = new(section, from);
+
+        if (saved.TryGetValue(old, out string value))
+        {
+            ConfigDefinition renamed = new(section, to);
+
+            if (!saved.ContainsKey(renamed))
+            {
+                saved[renamed] = value;
+            }
+
+            saved.Remove(old);
+        }
     }
 
     private static ConfigDescription Unsynced(string description)

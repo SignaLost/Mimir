@@ -15,9 +15,10 @@ public sealed partial class MimirSkill
     private int _added;
     private bool _dirty;
 
-    // The loaded character's unlocks, reread when the saved text changes.
+    // The loaded character's unlocks, locks and unlocks held back until the next level-up, reread when the saved text changes.
     private readonly HashSet<string> _unlocked = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _locked = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _held = new(StringComparer.OrdinalIgnoreCase);
     private Ability[] _snapshot = Array.Empty<Ability>();
     private Player _unlockedFor;
     private string _unlockedText;
@@ -164,10 +165,10 @@ public sealed partial class MimirSkill
         return ability != null && Unlocks.Grant(this, new[] { ability }) > 0;
     }
 
-    /// <summary>Removes an ability's unlock from the loaded character until their next level-up. True if it was unlocked.</summary>
+    /// <summary>Removes an ability's unlock from the loaded character and keeps it locked until <see cref="Unlock" />. True if it was unlocked.</summary>
     public bool Lock(string id)
     {
-        return Revoke(GetAbility(id));
+        return Revoke(GetAbility(id), untilLevelUp: false);
     }
 
     /// <summary>
@@ -295,14 +296,15 @@ public sealed partial class MimirSkill
         EnsureRecord();
         Read();
         _locked.Remove(ability.Id);
+        _held.Remove(ability.Id);
         bool added = _unlocked.Add(ability.Id);
         ability.Flagged = true;
         Write();
         return added;
     }
 
-    /// <summary>Removes an unlock and keeps it off until the next level-up; true if it was unlocked.</summary>
-    internal bool Revoke(Ability ability)
+    /// <summary>Removes an unlock and keeps it off, until the next level-up or until unlocked again; true if it was unlocked.</summary>
+    internal bool Revoke(Ability ability, bool untilLevelUp)
     {
         if (ability == null || !Player.m_localPlayer)
         {
@@ -313,7 +315,7 @@ public sealed partial class MimirSkill
         Read();
         bool was = _unlocked.Remove(ability.Id);
         ability.Flagged = false;
-        _locked.Add(ability.Id);
+        (untilLevelUp ? _held : _locked).Add(ability.Id);
         Write();
         return was;
     }
@@ -330,6 +332,7 @@ public sealed partial class MimirSkill
         Read();
         _unlocked.Clear();
         _locked.Clear();
+        _held.Clear();
 
         foreach (Ability ability in _abilities)
         {
@@ -341,18 +344,19 @@ public sealed partial class MimirSkill
         Unlocks.Dirty = true;
     }
 
-    internal void LiftLocks()
+    /// <summary>Frees the unlocks held back by the console, on a level-up.</summary>
+    internal void LiftHolds()
     {
         Read();
 
-        if (_locked.Count > 0)
+        if (_held.Count > 0)
         {
-            _locked.Clear();
+            _held.Clear();
             Write();
         }
     }
 
-    /// <summary>Adds the abilities the level covers that are neither unlocked nor locked to the list.</summary>
+    /// <summary>Adds the abilities the level covers that are neither unlocked, locked nor held back to the list.</summary>
     internal void Due(float level, List<Ability> into)
     {
         Read();
@@ -361,7 +365,7 @@ public sealed partial class MimirSkill
 
         foreach (Ability ability in _snapshot)
         {
-            if (ability.Level <= level && !ability.Flagged && !_locked.Contains(ability.Id))
+            if (ability.Level <= level && !ability.Flagged && !_locked.Contains(ability.Id) && !_held.Contains(ability.Id))
             {
                 into.Add(ability);
             }
@@ -392,15 +396,22 @@ public sealed partial class MimirSkill
         _unlockedText = text;
         _unlocked.Clear();
         _locked.Clear();
+        _held.Clear();
 
+        // Saved as "unlocked|locked|held"; 1.0 wrote the first two parts.
         if (!string.IsNullOrEmpty(text))
         {
-            int bar = text.IndexOf('|');
-            Split(bar < 0 ? text : text.Substring(0, bar), _unlocked);
+            string[] parts = text.Split('|');
+            Split(parts[0], _unlocked);
 
-            if (bar >= 0)
+            if (parts.Length > 1)
             {
-                Split(text.Substring(bar + 1), _locked);
+                Split(parts[1], _locked);
+            }
+
+            if (parts.Length > 2)
+            {
+                Split(parts[2], _held);
             }
         }
 
@@ -416,6 +427,7 @@ public sealed partial class MimirSkill
         _unlockedText = null;
         _unlocked.Clear();
         _locked.Clear();
+        _held.Clear();
 
         foreach (Ability ability in _abilities)
         {
@@ -444,7 +456,7 @@ public sealed partial class MimirSkill
             return;
         }
 
-        _unlockedText = string.Join(",", _unlocked) + "|" + string.Join(",", _locked);
+        _unlockedText = string.Join(",", _unlocked) + "|" + string.Join(",", _locked) + "|" + string.Join(",", _held);
         _unlockedFor = player;
         player.m_customData[UnlockKey] = _unlockedText;
     }
